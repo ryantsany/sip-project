@@ -38,10 +38,10 @@ class AuthController extends Controller
             'kelas' => $request->kelas,
         ]);
 
-        $token = $user->createToken($request->nomor_induk)->plainTextToken;
-
         return ResponseFormatter::success([
-            'token' => $token
+            'user' => $user,
+        ], [
+            'User created successfully'
         ]);
     }
 
