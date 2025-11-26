@@ -84,7 +84,10 @@ class AuthController extends Controller
             ]);
         }
 
-        return redirect(config('app.frontend_url') . '/first-login?nomor_induk=' . $request->nomor_induk);
+        // return redirect(config('app.frontend_url') . '/first-login?nomor_induk=' . $request->nomor_induk);
+        return ResponseFormatter::success([
+            'redirect_url' => config('app.frontend_url') . '/first-login?nomor_induk=' . $request->nomor_induk
+        ]);
     }
 
     public function logout(Request $request){
