@@ -138,13 +138,11 @@ class AuthController extends Controller
         ]);
     }
 
-    public function checkUserToken(Request $request){
+    public function getProfile(Request $request){
         $user = $request->user();
 
         if($user){
-            return ResponseFormatter::success([
-                'user' => $user
-            ]);
+            return ResponseFormatter::success( $user->api_response);
         }
 
         return ResponseFormatter::error(401, null, [

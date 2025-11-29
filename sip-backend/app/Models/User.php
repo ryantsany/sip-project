@@ -53,4 +53,18 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+
+    public function borrowings()
+    {
+        return $this->hasMany(Borrowing::class);
+    }
+
+    public function getApiResponseAttribute()
+    {
+        return [
+            'nama' => $this->nama,
+            'nomor_induk' => $this->nomor_induk,
+            'kelas' => $this->kelas,
+        ];
+    }
 }

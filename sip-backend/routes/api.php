@@ -16,7 +16,7 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
-    Route::post('/check-token', [App\Http\Controllers\Api\AuthController::class, 'checkUserToken']);
+    Route::get('/profile', [App\Http\Controllers\Api\AuthController::class, 'getProfile']);
 
     Route::get('/books', [App\Http\Controllers\Api\BookController::class, 'getAllBooks']);
     Route::get('/books/{slug}', [App\Http\Controllers\Api\BookController::class, 'getBookDetails']);
