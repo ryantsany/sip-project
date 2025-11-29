@@ -11,15 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notifications', function (Blueprint $table) {
+        Schema::create('borrowings', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->unsignedBigInteger('user_id');
-            $table->string('tipe');
-            $table->text('pesan');
-            $table->boolean('is_read')->default(false);
+            $table->unsignedBigInteger('book_id');
+            $table->date('borrow_date');
+            $table->date('due_date');
+            $table->date('return_date')->nullable();
+            $table->string('status');
+            $table->integer('denda')->default(0);
+            $table->text('notes')->nullable();
             $table->timestamps();
 
+            $table->softDeletes();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('book_id')->references('id')->on('books')->onDelete('cascade');
         });
     }
 
@@ -28,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('borrowings');
     }
 };

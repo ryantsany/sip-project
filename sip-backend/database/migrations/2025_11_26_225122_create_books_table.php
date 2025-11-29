@@ -15,16 +15,16 @@ return new class extends Migration
             $table->id();
             $table->string('judul');
             $table->string('cover_url')->nullable();
-            $table->string('pengarang');
+            $table->string('penulis');
             $table->string('penerbit');
             $table->year('tahun');
             $table->string('isbn')->unique();
             $table->text('deskripsi')->nullable();
             $table->string('kategori')->nullable();
-            $table->string('tag')->nullable();
             $table->integer('jumlah')->default(1);
             $table->integer('stok')->default(1);
             $table->string('status');
+            $table->string('slug');
             $table->timestamps();
         });
     }

@@ -41,7 +41,7 @@ class AuthController extends Controller
         return ResponseFormatter::success([
             'user' => $user,
         ], [
-            'User created successfully'
+            'User berhasil dibuat'
         ]);
     }
 
@@ -58,7 +58,7 @@ class AuthController extends Controller
 
         if(is_null($user)){
             return ResponseFormatter::error(404, null, [
-                'User not found'
+                'User tidak ditemukan'
             ]);
         }
 
@@ -74,20 +74,21 @@ class AuthController extends Controller
 
             if(Hash::check($request->password, $user->password)){
                 $token = $user->createToken($user->nomor_induk)->plainTextToken;
-                return ResponseFormatter::success([
-                    'token' => $token
-                ]);
+                if($user->role == 'siswa' || $user->role == 'guru') {
+                    return ResponseFormatter::success(['redirect_url' => config('app.frontend_url') . '/dashboard', 'token' => $token]);
+                } else {
+                    return ResponseFormatter::success(['redirect_url' => config('app.frontend_url') . '/admin', 'token' => $token]);
+                }
             }
 
             return ResponseFormatter::error(401, null, [
-                'Incorrect credentials'
+                'Kredensial tidak valid'
             ]);
         }
 
         // return redirect(config('app.frontend_url') . '/first-login?nomor_induk=' . $request->nomor_induk);
-        return ResponseFormatter::success([
-            'redirect_url' => config('app.frontend_url') . '/first-login?nomor_induk=' . $request->nomor_induk
-        ]);
+        return ResponseFormatter::success(['redirect_url' => config('app.frontend_url') . '/first-login?nomor_induk=' . $request->nomor_induk]);
+        
     }
 
     public function logout(Request $request){
@@ -95,7 +96,7 @@ class AuthController extends Controller
         $user->currentAccessToken()->delete();
 
         return ResponseFormatter::success(null, [
-            'Successfully logged out'
+            'Logout sukses'
         ]);
     }
 
