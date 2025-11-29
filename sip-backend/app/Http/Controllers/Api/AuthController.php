@@ -91,6 +91,44 @@ class AuthController extends Controller
         
     }
 
+    public function firstLogin(Request $request){
+        $validator = Validator::make($request->all(),[
+            'nomor_induk' => 'required|string|max:32',
+            'password' => 'required|string|min:8',
+            'password_confirmation' => 'required|string|same:password',
+        ]);
+
+        if($validator->fails()){
+            return ResponseFormatter::error(422, $validator->errors(), [
+                'Password dan konfirmasi password harus sama'
+            ]);
+        }
+
+        $user = User::where('nomor_induk', $request->nomor_induk)->first();
+
+        if(is_null($user)){
+            return ResponseFormatter::error(404, null, [
+                'User tidak ditemukan'
+            ]);
+        }
+
+        if(!$user->first_login){
+            return ResponseFormatter::error(400, null, [
+                'Anda sudah membuat password, silahkan login seperti menggunakan password'
+            ]);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->first_login = false;
+        $user->save();
+
+        $token = $user->createToken($user->nomor_induk)->plainTextToken;
+
+        return ResponseFormatter::success(['redirect_url' => config('app.frontend_url') . '/dashboard', 'token' => $token], [
+            'Password berhasil dibuat'
+        ]);
+    }
+
     public function logout(Request $request){
         $user = $request->user();
         $user->currentAccessToken()->delete();
