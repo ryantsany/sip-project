@@ -1,9 +1,9 @@
-// import Dashboard from "@/components/dashboard"; 
+import LoginPage from "@/components/login";
 
-// export default function Page() {
-//   return (
-//     <>
-//       <Dashboard />
-//     </>
-//   );
-// }
+export default function Page() {
+  return (
+    <>
+      <LoginPage />
+    </>
+  );
+}
