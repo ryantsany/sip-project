@@ -2,12 +2,22 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { http } from "@/lib/http";
+import { useAuth } from "@/context/auth-context";
+
+type LoginResponse = {
+  token: string;
+  redirect_url: string;
+};
+
+type APIResponse<T> = {
+  meta: unknown;
+  data: T;
+};
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,29 +32,23 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await http.post<any>('/login', {
+      const response = await http.post<APIResponse<LoginResponse>>('/login', {
         nomor_induk: formData.nomorInduk,
         password: formData.password
       });
 
       if (response.data?.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-
-      if (response.data?.redirect_url) {
-        try {
-          const url = new URL(response.data.redirect_url);
-          router.push(url.pathname + url.search);
-        } catch (e) {
-          router.push(response.data.redirect_url);
-        }
+        await login(response.data.token, response.data?.redirect_url);
       } else {
-        router.push("/dashboard");
+        throw new Error("Token tidak ditemukan dalam respon.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login error:", err);
-      setError(err.message || "Login gagal. Silakan coba lagi.");
-    } finally {
+      let message = "Login gagal. Silakan coba lagi.";
+      if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
       setLoading(false);
     }
   };
@@ -107,7 +111,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/*}
           {/* Input Password */}
           <div className="space-y-1">
             <label
@@ -126,7 +129,7 @@ export default function LoginPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 disabled={loading}
               />
-              
+
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}

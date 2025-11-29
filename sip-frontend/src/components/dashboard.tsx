@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/context/auth-context";
 import {
   LayoutDashboard,
   History,
@@ -59,6 +61,7 @@ const books: Book[] = [
 
 export default function Dashboard() {
   // --- STATE MANAGEMENT ---
+  const { user, loading, logout } = useAuth();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,6 +81,13 @@ export default function Dashboard() {
 
     return matchCategory && matchSearch;
   });
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    if (e.target.value) {
+      setSelectedCategory("Semua");
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
@@ -99,12 +109,22 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center gap-3 mb-8">
-          <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 border-2">
+          <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 border-2 overflow-hidden">
+            {/* Placeholder avatar or user image if available */}
             <User size={24} />
           </div>
-          <div>
-            <p className="text-sm font-bold">Heru Budi</p>
-            <p className="text-xs text-gray-500">1313623056</p>
+          <div className="flex-1 overflow-hidden">
+            {loading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            ) : (
+              <>
+                <p className="text-sm font-bold truncate" title={user?.nama}>{user?.nama || "User"}</p>
+                <p className="text-xs text-gray-500 truncate" title={user?.nomor_induk}>{user?.nomor_induk || "-"}</p>
+              </>
+            )}
           </div>
         </div>
 
@@ -135,6 +155,7 @@ export default function Dashboard() {
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-gray-500 hover:text-red-600 mt-auto"
+          onClick={logout}
         >
           <LogOut size={20} />
           Keluar
@@ -148,7 +169,13 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold text-slate-700">
               Selamat datang kembali,
             </h1>
-            <h1 className="text-3xl font-bold text-slate-700">Heru!</h1>
+            {loading ? (
+              <Skeleton className="h-9 w-48 mt-2" />
+            ) : (
+              <h1 className="text-3xl font-bold text-slate-700">
+                {user?.nama ? user.nama.split(' ')[0] : "User"}!
+              </h1>
+            )}
           </div>
           <div className="cursor-pointer p-2 rounded-full transition-colors text-blue-600 hover:bg-blue-100 hover:text-black">
             <Bell size={34} className="fill-current" />
@@ -164,15 +191,14 @@ export default function Dashboard() {
             className="w-full pl-10 pr-12 py-6 bg-white border-gray-200 rounded-xl shadow-sm focus-visible:ring-blue-500 placeholder:text-gray-400"
             placeholder="Cari berdasarkan Judul, Penulis, atau Kategori..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
           />
 
           <div
-            className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-2 rounded-full transition-colors ${
-              isFilterOpen
-                ? "bg-blue-100 text-blue-600"
-                : "hover:bg-gray-100 text-gray-500"
-            }`}
+            className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-2 rounded-full transition-colors ${isFilterOpen
+              ? "bg-blue-100 text-blue-600"
+              : "hover:bg-gray-100 text-gray-500"
+              }`}
             onClick={() => setIsFilterOpen(!isFilterOpen)}
           >
             <SlidersHorizontal size={18} />
@@ -190,11 +216,10 @@ export default function Dashboard() {
                     setSelectedCategory(category);
                     setIsFilterOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                    selectedCategory === category
-                      ? "bg-blue-50 text-blue-600 font-semibold"
-                      : "text-slate-600 hover:bg-gray-50"
-                  }`}
+                  className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${selectedCategory === category
+                    ? "bg-blue-50 text-blue-600 font-semibold"
+                    : "text-slate-600 hover:bg-gray-50"
+                    }`}
                 >
                   {category}
                 </button>
@@ -218,9 +243,9 @@ export default function Dashboard() {
                 <h2 className="text-xl font-bold text-slate-600 group-hover:text-blue-600 transition-colors">
                   Baru ditambahkan
                 </h2>
-                <ChevronRight 
-                  size={20} 
-                  className="text-slate-600 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" 
+                <ChevronRight
+                  size={20}
+                  className="text-slate-600 group-hover:text-blue-600 group-hover:translate-x-1 transition-all"
                 />
               </Link>
             ) : (

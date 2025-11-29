@@ -38,14 +38,14 @@ export default function NewBooksPage() {
   return (
     <div className="min-h-screen bg-[#F3F6F8] p-8 font-sans text-slate-900">
       <div className="max-w-7xl mx-auto mb-8 flex items-center gap-4">
-        <Link 
-          href="/dashboard" 
+        <Link
+          href="/dashboard"
         >
           <ArrowLeft size={24} />
         </Link>
         <div>
-           <h1 className="text-3xl font-bold text-slate-700">Buku Baru Ditambahkan</h1>
-           <p className="text-slate-500 text-sm">Daftar koleksi terbaru perpustakaan</p>
+          <h1 className="text-3xl font-bold text-slate-700">Buku Baru Ditambahkan</h1>
+          <p className="text-slate-500 text-sm">Daftar koleksi terbaru perpustakaan</p>
         </div>
       </div>
 
@@ -59,7 +59,15 @@ export default function NewBooksPage() {
   );
 }
 
-function BookCard({ book }: { book: any }) {
+type Book = {
+  id: number;
+  title: string;
+  author: string;
+  category: string;
+  coverImage: string;
+};
+
+function BookCard({ book }: { book: Book }) {
   return (
     <div className="group relative aspect-[3/4.5] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer bg-gray-200">
       <Image
