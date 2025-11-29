@@ -116,20 +116,26 @@ export default function Dashboard() {
             <LayoutDashboard size={20} />
             Dashboard
           </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3 text-gray-500 hover:text-slate-900"
-          >
-            <History size={20} />
-            Riwayat Peminjaman
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3 text-gray-500 hover:text-slate-900"
-          >
-            <Lock size={20} />
-            Ubah Kata Sandi
-          </Button>
+
+          <Link href="/riwayatpinjam" className="block">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-gray-500 hover:text-slate-900"
+            >
+              <History size={20} />
+              Riwayat Peminjaman
+            </Button>
+          </Link>
+
+          <Link href="/gantipassword" className="block">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-gray-500 hover:text-slate-900"
+            >
+              <Lock size={20} />
+              Ubah Kata Sandi
+            </Button>
+          </Link>
         </nav>
 
         <Button
