@@ -8,6 +8,7 @@ Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login'])
 
 Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
     Route::post('/add-user', [App\Http\Controllers\Api\AuthController::class, 'addUser']);
+    Route::post('/tambah-buku', [App\Http\Controllers\Api\BookController::class, 'addNewBook']);
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
