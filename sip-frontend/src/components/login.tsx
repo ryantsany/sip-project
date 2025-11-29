@@ -3,20 +3,50 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { http } from "@/lib/http";
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     nomorInduk: "",
     password: "",
   });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login data:", formData);
-    router.push("/dashboard");
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await http.post<any>('/login', {
+        nomor_induk: formData.nomorInduk,
+        password: formData.password
+      });
+
+      if (response.data?.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+
+      if (response.data?.redirect_url) {
+        try {
+          const url = new URL(response.data.redirect_url);
+          router.push(url.pathname + url.search);
+        } catch (e) {
+          router.push(response.data.redirect_url);
+        }
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(err.message || "Login gagal. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,7 +54,7 @@ export default function LoginPage() {
       {/* --- 1. BACKGROUND IMAGE & OVERLAY --- */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/loginn.png" 
+          src="/loginn.png"
           alt="Library Background"
           fill
           className="object-cover"
@@ -42,7 +72,7 @@ export default function LoginPage() {
             width={90}
             height={90}
             className="object-contain"
-          />     
+          />
           <h1 className="text-lg font-bold text-slate-700">
             Sistem Informasi Perpustakaan
           </h1>
@@ -50,11 +80,17 @@ export default function LoginPage() {
 
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
-          
+
+          {error && (
+            <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg border border-red-200 text-center">
+              {error}
+            </div>
+          )}
+
           {/* Input Nomor Induk */}
           <div className="space-y-1">
-            <label 
-              htmlFor="nomorInduk" 
+            <label
+              htmlFor="nomorInduk"
               className="block text-sm font-bold text-slate-600 ml-1"
             >
               Nomor Induk
@@ -65,15 +101,17 @@ export default function LoginPage() {
               className="w-full px-4 py-3 rounded-lg bg-[#F0F4FF] border-transparent focus:bg-white border focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-slate-800 outline-none transition-all placeholder:text-gray-400"
               value={formData.nomorInduk}
               placeholder="Masukkan Nomor Induk Anda"
-              onChange={(e) => setFormData({...formData, nomorInduk: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, nomorInduk: e.target.value })}
               required
+              disabled={loading}
             />
           </div>
 
+          {/*}
           {/* Input Password */}
           <div className="space-y-1">
-            <label 
-              htmlFor="password" 
+            <label
+              htmlFor="password"
               className="block text-sm font-bold text-slate-600 ml-1"
             >
               Password
@@ -85,14 +123,15 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 rounded-lg bg-[#F0F4FF] border-transparent focus:bg-white border focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-slate-800 outline-none transition-all placeholder:text-gray-400 pr-12"
                 value={formData.password}
                 placeholder="Masukkan Password Anda"
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                required
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                disabled={loading}
               />
-              {/* Toggle Show/Hide Password */}
+              
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600"
+                disabled={loading}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -102,11 +141,18 @@ export default function LoginPage() {
           {/* Tombol Login */}
           <button
             type="submit"
-            className="w-full bg-[#2563EB] hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition-all transform active:scale-[0.98] mt-4"
+            disabled={loading}
+            className="w-full bg-[#2563EB] hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition-all transform active:scale-[0.98] mt-4 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Logging in...
+              </>
+            ) : (
+              "Login"
+            )}
           </button>
-
         </form>
       </div>
     </div>

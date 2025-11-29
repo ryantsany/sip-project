@@ -110,6 +110,17 @@ class BookController extends Controller
         return ResponseFormatter::success($book->api_response, ['Buku berhasil diperbarui']);
     }
 
+    public function deleteBook($slug){
+        $book = Book::where('slug', $slug)->first();
+        if (!$book) {
+            return ResponseFormatter::error(404, null, ['Buku tidak ditemukan']);
+        }
+
+        $book->delete();
+
+        return ResponseFormatter::success(null, ['Buku berhasil dihapus']);
+    }
+
     public function getAllBooks(){
         $books = Book::orderBy('created_at', 'desc')
             ->paginate(10)
