@@ -6,19 +6,14 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/auth-context";
 import {
-  LayoutDashboard,
-  History,
-  User,
-  LogOut,
   Bell,
   Search,
   SlidersHorizontal,
   ChevronRight,
-  Lock,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import Sidebar from "@/components/sidebar"; // Import Sidebar Baru
 
 type Book = {
   id: number;
@@ -60,15 +55,13 @@ const books: Book[] = [
 ];
 
 export default function Dashboard() {
-  // --- STATE MANAGEMENT ---
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
 
   const categories = ["Semua", ...new Set(books.map((b) => b.category))];
 
-  // Logic Filter
   const filteredBooks = books.filter((book) => {
     const matchCategory =
       selectedCategory === "Semua" || book.category === selectedCategory;
@@ -91,82 +84,8 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
-      {/* --- SIDEBAR --- */}
-      <aside className="hidden md:flex w-64 bg-white border-r border-gray-100 flex-col p-6 fixed h-full z-10">
-        <div className="flex items-center gap-3 mb-10">
-          <Image
-            src="/logo.png"
-            alt="Logo Perpustakaan"
-            width={50}
-            height={50}
-            className="object-contain"
-          />
-          <div className="font-bold text-xl text-slate-700 leading-tight">
-            Perpustakan
-            <br />
-            Sekolah
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 border-2 overflow-hidden">
-            {/* Placeholder avatar or user image if available */}
-            <User size={24} />
-          </div>
-          <div className="flex-1 overflow-hidden">
-            {loading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-3 w-16" />
-              </div>
-            ) : (
-              <>
-                <p className="text-sm font-bold truncate" title={user?.nama}>{user?.nama || "User"}</p>
-                <p className="text-xs text-gray-500 truncate" title={user?.nomor_induk}>{user?.nomor_induk || "-"}</p>
-              </>
-            )}
-          </div>
-        </div>
-
-        <nav className="flex-1 space-y-2">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
-          >
-            <LayoutDashboard size={20} />
-            Dashboard
-          </Button>
-
-          <Link href="/riwayatpinjam" className="block">
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 text-gray-500 hover:text-slate-900"
-            >
-              <History size={20} />
-              Riwayat Peminjaman
-            </Button>
-          </Link>
-
-          <Link href="/gantipassword" className="block">
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 text-gray-500 hover:text-slate-900"
-            >
-              <Lock size={20} />
-              Ubah Kata Sandi
-            </Button>
-          </Link>
-        </nav>
-
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-3 text-gray-500 hover:text-red-600 mt-auto"
-          onClick={logout}
-        >
-          <LogOut size={20} />
-          Keluar
-        </Button>
-      </aside>
+      {/* PANGGIL SIDEBAR DISINI */}
+      <Sidebar />
 
       {/* --- MAIN CONTENT --- */}
       <main className="flex-1 md:ml-64 p-8 overflow-y-auto">
@@ -201,10 +120,11 @@ export default function Dashboard() {
           />
 
           <div
-            className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-2 rounded-full transition-colors ${isFilterOpen
-              ? "bg-blue-100 text-blue-600"
-              : "hover:bg-gray-100 text-gray-500"
-              }`}
+            className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-2 rounded-full transition-colors ${
+              isFilterOpen
+                ? "bg-blue-100 text-blue-600"
+                : "hover:bg-gray-100 text-gray-500"
+            }`}
             onClick={() => setIsFilterOpen(!isFilterOpen)}
           >
             <SlidersHorizontal size={18} />
@@ -222,10 +142,11 @@ export default function Dashboard() {
                     setSelectedCategory(category);
                     setIsFilterOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${selectedCategory === category
-                    ? "bg-blue-50 text-blue-600 font-semibold"
-                    : "text-slate-600 hover:bg-gray-50"
-                    }`}
+                  className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                    selectedCategory === category
+                      ? "bg-blue-50 text-blue-600 font-semibold"
+                      : "text-slate-600 hover:bg-gray-50"
+                  }`}
                 >
                   {category}
                 </button>
@@ -234,7 +155,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* --- SECTION 1: BARU DITAMBAHKAN --- */}
+        {/* --- CONTENT BOOKS --- */}
         <section className="mb-10">
           <div className="flex items-center justify-between mb-4">
             {searchQuery ? (
@@ -242,17 +163,11 @@ export default function Dashboard() {
                 Hasil pencarian: &quot;{searchQuery}&quot;
               </h2>
             ) : selectedCategory === "Semua" ? (
-              <Link
-                href="/dashboard/new-books"
-                className="group flex items-center gap-2 cursor-pointer"
-              >
+              <Link href="/dashboard/new-books" className="group flex items-center gap-2 cursor-pointer">
                 <h2 className="text-xl font-bold text-slate-600 group-hover:text-blue-600 transition-colors">
                   Baru ditambahkan
                 </h2>
-                <ChevronRight
-                  size={20}
-                  className="text-slate-600 group-hover:text-blue-600 group-hover:translate-x-1 transition-all"
-                />
+                <ChevronRight size={20} className="text-slate-600 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
               </Link>
             ) : (
               <h2 className="text-xl font-bold text-slate-600">
@@ -263,9 +178,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredBooks.length > 0 ? (
-              filteredBooks.map((book) => (
-                <BookCard key={book.id} book={book} />
-              ))
+              filteredBooks.map((book) => <BookCard key={book.id} book={book} />)
             ) : (
               <div className="col-span-full py-10 text-center text-gray-400">
                 Tidak ada buku ditemukan.
@@ -274,12 +187,10 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* --- SECTION 2: REKOMENDASI --- */}
+        {/* --- RECOMMENDATION --- */}
         {selectedCategory === "Semua" && searchQuery === "" && (
           <section>
-            <h2 className="text-xl font-bold text-slate-600 mb-4">
-              Rekomendasi
-            </h2>
+            <h2 className="text-xl font-bold text-slate-600 mb-4">Rekomendasi</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {books.slice(1, 4).map((book, index) => (
                 <BookCard key={`rec-${index}`} book={book} />
@@ -295,28 +206,30 @@ export default function Dashboard() {
 
 function BookCard({ book }: { book: Book }) {
   return (
-    <div className="group relative aspect-[3/4.5] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer bg-gray-200">
-      <Image
-        src={book.coverImage}
-        alt={book.title}
-        fill
-        className="object-cover transition-transform group-hover:scale-105"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
-      <div className="absolute top-3 left-3">
-        <span className="bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-1 rounded-full text-slate-800 uppercase tracking-wide">
-          {book.category}
-        </span>
+    <Link href="/detailbuku" className="block h-full">
+      <div className="group relative aspect-[3/4.5] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer bg-gray-200">
+        <Image
+          src={book.coverImage}
+          alt={book.title}
+          fill
+          className="object-cover transition-transform group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
+        <div className="absolute top-3 left-3">
+          <span className="bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-1 rounded-full text-slate-800 uppercase tracking-wide">
+            {book.category}
+          </span>
+        </div>
+        <div className="absolute bottom-4 left-4 right-4 text-white">
+          <h3 className="font-bold text-lg leading-tight mb-1 line-clamp-2 drop-shadow-md">
+            {book.title}
+          </h3>
+          <p className="text-xs text-gray-300 font-medium drop-shadow-md">
+            {book.author}
+          </p>
+        </div>
       </div>
-      <div className="absolute bottom-4 left-4 right-4 text-white">
-        <h3 className="font-bold text-lg leading-tight mb-1 line-clamp-2 drop-shadow-md">
-          {book.title}
-        </h3>
-        <p className="text-xs text-gray-300 font-medium drop-shadow-md">
-          {book.author}
-        </p>
-      </div>
-    </div>
+    </Link>
   );
 }
