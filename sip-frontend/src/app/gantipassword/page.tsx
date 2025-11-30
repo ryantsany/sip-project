@@ -1,9 +1,12 @@
 import GantiPassword from "@/components/gantipassword"; 
+import { SiswaAuth } from "@/components/auth/siswa-auth";
 
 export default function GantiPasswordPage() {
   return (
     <>
-      <GantiPassword />
+      <SiswaAuth>
+        <GantiPassword />
+      </SiswaAuth>
     </>
   );
 }

@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { SiswaAuth } from "@/components/auth/siswa-auth";
 
 const books = [
   {
@@ -36,26 +37,28 @@ const books = [
 
 export default function NewBooksPage() {
   return (
-    <div className="min-h-screen bg-[#F3F6F8] p-8 font-sans text-slate-900">
-      <div className="max-w-7xl mx-auto mb-8 flex items-center gap-4">
-        <Link
-          href="/dashboard"
-        >
-          <ArrowLeft size={24} />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-slate-700">Buku Baru Ditambahkan</h1>
-          <p className="text-slate-500 text-sm">Daftar koleksi terbaru perpustakaan</p>
+    <SiswaAuth>
+      <div className="min-h-screen bg-[#F3F6F8] p-8 font-sans text-slate-900">
+        <div className="max-w-7xl mx-auto mb-8 flex items-center gap-4">
+          <Link
+            href="/dashboard"
+          >
+            <ArrowLeft size={24} />
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-700">Buku Baru Ditambahkan</h1>
+            <p className="text-slate-500 text-sm">Daftar koleksi terbaru perpustakaan</p>
+          </div>
+        </div>
+
+        {/* Grid Buku Full Page */}
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {books.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))}
         </div>
       </div>
-
-      {/* Grid Buku Full Page */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {books.map((book) => (
-          <BookCard key={book.id} book={book} />
-        ))}
-      </div>
-    </div>
+    </SiswaAuth>
   );
 }
 

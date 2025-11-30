@@ -8,6 +8,7 @@ type UserData = {
     nama: string;
     nomor_induk: string;
     kelas: string | null;
+    role: string;
 };
 
 type AuthContextType = {
@@ -59,6 +60,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             router.push("/dashboard");
         }
     };
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            fetchProfile();
+        } else {
+            setLoading(false);
+        }
+    }, [fetchProfile]);
 
     return (
         <AuthContext.Provider value={{ user, loading, login, logout }}>
