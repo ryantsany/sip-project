@@ -129,6 +129,15 @@ class BookController extends Controller
         return ResponseFormatter::success($books);
     }
 
+    public function getFourLatestBooks(){
+        $books = Book::orderBy('created_at', 'desc')
+            ->take(4)
+            ->get()
+            ->map(fn (Book $book) => $book->api_response);
+
+        return ResponseFormatter::success($books);
+    }
+
     public function getBookDetails($slug){
         $book = Book::where('slug', $slug)->first();
 
