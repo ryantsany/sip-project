@@ -65,6 +65,7 @@ class User extends Authenticatable
             'nama' => $this->nama,
             'nomor_induk' => $this->nomor_induk,
             'kelas' => $this->kelas,
+            'role' => $this->role,
         ];
     }
 }

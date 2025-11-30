@@ -39,7 +39,6 @@ class BorrowController extends Controller
         return ResponseFormatter::success($borrowings);
     }
 
-    // TODO: user extend borrow
     public function extendBorrow(Request $request, $slug){
         $borrowing = Borrowing::where('slug', $slug)->first();
 
