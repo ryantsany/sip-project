@@ -2,12 +2,47 @@
 
 import React from "react";
 import Image from "next/image";
-import { Bell } from "lucide-react";
+import { useState } from "react";
+import { Bell, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar"; // Import Sidebar Baru
+import { set } from "date-fns";
+import { http } from "@/lib/http";
+import { toast } from "sonner";
 
 export default function GantiPassword() {
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    async function changePassword() {
+      try {
+          setIsLoading(true);
+          setError(null);
+          const response =  await http.post("/change-password", {
+            current_password: oldPassword,
+            new_password: newPassword,
+            new_password_confirmation: confirmNewPassword
+          });
+      } catch (error) {
+          console.error("Failed to fetch Books:", error);
+          setError("Gagal memuat detail buku.");
+      } finally {
+          setIsLoading(false);
+          toast.success("Berhasil Mengganti Password!", {
+              duration: 5000,
+          });
+      }
+    }
+    changePassword();
+  };
+
   return (
     <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
       
@@ -37,7 +72,9 @@ export default function GantiPassword() {
                       <label className="text-sm font-bold text-slate-700 block">
                           Kata sandi lama
                       </label>
-                      <Input 
+                      <Input
+                          value={oldPassword}
+                          onChange={(e) => setOldPassword(e.target.value)}
                           type="password"
                           placeholder="Masukkan kata sandi lama"
                           className="bg-gray-50 border-gray-200 h-14 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all px-4 text-base"
@@ -48,6 +85,8 @@ export default function GantiPassword() {
                           Kata sandi baru
                       </label>
                       <Input 
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
                           type="password"
                           placeholder="Masukkan kata sandi baru"
                           className="bg-gray-50 border-gray-200 h-14 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all px-4 text-base"
@@ -58,6 +97,8 @@ export default function GantiPassword() {
                           Konfirmasi kata sandi baru
                       </label>
                       <Input 
+                          value={confirmNewPassword}
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
                           type="password"
                           placeholder="Ulangi kata sandi baru"
                           className="bg-gray-50 border-gray-200 h-14 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all px-4 text-base"
@@ -66,9 +107,11 @@ export default function GantiPassword() {
                   <div className="pt-6 flex justify-end w-full">
                       <Button 
                           type="submit"
+                          onClick={handleSubmit}
                           className=" bg-blue-500 hover:bg-blue-700 text-white font-bold px-10 h-12 rounded-xl shadow-sm hover:shadow-md transition-all text-sm tracking-wide"
+                          disabled={isLoading}
                       >
-                          Simpan
+                        {isLoading ? <><Loader2 /> Menyimpan...</> : "Simpan"}
                       </Button>
                   </div>
               </form>

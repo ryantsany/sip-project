@@ -149,4 +149,31 @@ class AuthController extends Controller
             'Invalid token'
         ]);
     }
+
+    public function changePassword(Request $request){
+        $validator = Validator::make($request->all(),[
+            'current_password' => 'required|string|min:8',
+            'new_password' => 'required|string|min:8|different:current_password',
+            'new_password_confirmation' => 'required|string|same:new_password',
+        ]);
+
+        if($validator->fails()){
+            return ResponseFormatter::error(422, $validator->errors());
+        }
+
+        $user = $request->user();
+
+        if(!Hash::check($request->current_password, $user->password)){
+            return ResponseFormatter::error(400, null, [
+                'Password saat ini tidak valid'
+            ]);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return ResponseFormatter::success(null, [
+            'Password berhasil diubah'
+        ]);
+    }
 }
