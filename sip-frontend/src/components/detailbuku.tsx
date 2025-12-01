@@ -81,8 +81,6 @@ export default function DetailBuku() {
         alert(`Buku berhasil dipinjam! Tanggal: ${formattedDate}`);
     };
 
-
-
     const detailTitle = bookSummary?.judul ?? (fetchError ? "Gagal memuat buku" : FALLBACK_TITLE);
     const coverImage = ASSET_BASE + (bookSummary?.cover_url ?? FALLBACK_COVER);
     const statusLabel = bookSummary?.status
@@ -133,14 +131,14 @@ export default function DetailBuku() {
             </div>
 
             {/* --- MAIN CONTENT --- */}
-            <div className="flex flex-col lg:flex-row gap-8 lg:h-[600px]">
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
                 {isLoadingBook ? (
                     <BookDetailSkeleton />
                 ) : bookSummary ? (
                     <>
                         {/* Bagian Kiri: Cover Buku */}
-                        <div className="w-full lg:w-auto shrink-0 flex justify-center lg:justify-start h-auto lg:h-full">
-                            <div className="relative h-full aspect-2/3 rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+                        <div className="w-full lg:w-[350px] shrink-0 flex justify-center lg:justify-start">
+                            <div className="relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-lg border border-gray-200">
                                 <Image
                                     src={coverImage}
                                     alt={bookSummary.judul}
@@ -153,7 +151,7 @@ export default function DetailBuku() {
                         </div>
 
                         {/* Bagian Kanan: Informasi Detail */}
-                        <div className="flex flex-col w-full bg-white rounded-2xl p-8 shadow-sm border border-gray-100 relative h-100%">
+                        <div className="flex flex-col bg-white rounded-2xl p-8 shadow-sm border border-gray-100 w-full">
                             <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                                 <h2 className="text-2xl md:text-3xl font-bold text-slate-800 leading-tight">
                                     {bookSummary.judul}
@@ -168,7 +166,7 @@ export default function DetailBuku() {
                             {/* Metadata List */}
                             <div className="space-y-3 mb-8 text-sm md:text-base">
                                 {/* Penulis */}
-                                <div className="flex items-stdart">
+                                <div className="flex items-start">
                                     <span className="font-semibold text-slate-800 w-28 shrink-0">Penulis</span>
                                     <span className="mr-3 text-slate-800">:</span>
                                     <span className="text-slate-600 flex-1">{bookSummary.penulis ?? "-"}</span>
@@ -290,12 +288,13 @@ export default function DetailBuku() {
 function BookDetailSkeleton() {
     return (
         <>
-            <div className="w-full lg:w-auto shrink-0 flex justify-center lg:justify-start h-auto lg:h-full">
-                <div className="relative h-full aspect-2/3 rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+            <div className="w-full lg:w-[400px] shrink-0 flex justify-center lg:justify-start">
+                <div className="relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-lg border border-gray-200">
                     <Skeleton className="h-full w-full" />
                 </div>
             </div>
-            <div className="flex-1 w-full bg-white rounded-2xl p-8 shadow-sm border border-gray-100 relative h-full">
+
+            <div className="flex-1 w-full bg-white rounded-2xl p-8 shadow-sm border border-gray-100 relative">
                 <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                     <Skeleton className="h-9 w-3/4" />
                     <Skeleton className="h-6 w-24" />

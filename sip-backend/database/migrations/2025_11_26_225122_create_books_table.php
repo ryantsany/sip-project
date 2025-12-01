@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('judul');
             $table->string('cover_url')->nullable();
-            $table->string('penulis');
+            $table->string('pengarang');
             $table->string('penerbit');
             $table->year('tahun');
             $table->string('isbn')->unique();
