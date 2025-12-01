@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { http } from "@/lib/http";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { id } from "date-fns/locale"; 
 import { cn } from "@/lib/utils"; 
-import { Bell, Calendar as CalendarIcon } from "lucide-react";
+import { Bell, Calendar as CalendarIcon, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,7 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { BookSummary, BookSummaryResponse } from "@/types/api";
+import { BookSummary, BookSummaryResponse, BorrowCreateResponse } from "@/types/api";
 import { toast } from "sonner";
 
 const FALLBACK_COVER = "/bluebox17.jpeg";
@@ -46,6 +46,7 @@ export default function DetailBuku() {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [bookSummary, setBookSummary] = useState<BookSummary | null>(null);
     const [isLoadingBook, setIsLoadingBook] = useState(true);
+    const [isLoadingBorrow, setIsLoadingBorrow] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
 
     // STATE FOR DIALOG 
@@ -69,7 +70,6 @@ export default function DetailBuku() {
                 setFetchError(null);
                 const response = await http.get<BookSummaryResponse>("/books/" + slug);
                 setBookSummary(response.data);
-                console.log("Fetched Books:", response.data.judul);
             } catch (error) {
                 console.error("Failed to fetch Books:", error);
                 setFetchError("Gagal memuat detail buku.");
@@ -82,21 +82,40 @@ export default function DetailBuku() {
     }, []);
 
     const handlePinjam = () => {
-        const formattedDate = date ? format(date, "dd MMMM yyyy", { locale: id }) : "Belum dipilih";
+        const query = new URLSearchParams(window.location.search);
+        const slug = query.get("buku");
+        const formattedDate: string = date ? format(date, "yyyy-MM-dd", { locale: id }) : "Belum dipilih";
 
         setIsDialogOpen(false);
 
-        toast.success("Berhasil Meminjam Buku!", {
-            description: `Buku "${bookSummary?.judul}" berhasil dipinjam untuk tanggal ${formattedDate}.`,
-            duration: 5000, 
-            
-            action: {
-                label: "Lihat",
-                onClick: () => {
-                    window.location.href = "/riwayatpinjam";
-                },
-            },
-        });
+        async function borrowBook() {
+            try {
+                setIsLoadingBorrow(true);
+                setFetchError(null);
+                const response = await http.post<BorrowCreateResponse>("/pinjam-buku", {
+                    book_slug: slug,
+                    borrow_date: formattedDate
+                });
+            } catch (error) {
+                console.error("Failed to fetch Books:", error);
+                setFetchError("Gagal memuat detail buku.");
+            } finally {
+                setIsLoadingBorrow(false);
+                toast.success("Berhasil Meminjam Buku!", {
+                    description: `Buku "${bookSummary?.judul}" berhasil dipinjam untuk tanggal ${format(formattedDate, "dd MMMM yyyy", { locale: id })}.`,
+                    duration: 5000, 
+                    
+                    action: {
+                        label: "Lihat",
+                        onClick: () => {
+                            window.location.href = "/riwayatpinjam";
+                        },
+                    },
+                });
+            }
+        }
+        borrowBook();
+        
     };
 
     const detailTitle = bookSummary?.judul ?? (fetchError ? "Gagal memuat buku" : FALLBACK_TITLE);
@@ -285,8 +304,13 @@ export default function DetailBuku() {
                                                 type="submit" 
                                                 onClick={handlePinjam}
                                                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 rounded-lg"
+                                                disabled={isLoadingBorrow}
                                             >
-                                                Pinjam
+                                                {isLoadingBorrow ? 
+                                                <>
+                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    Meminjam...
+                                                </>  : "Pinjam"}
                                             </Button>
                                         </DialogFooter>
                                     </DialogContent>

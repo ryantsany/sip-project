@@ -46,9 +46,15 @@ class Borrowing extends Model
         return [
             'id' => $this->id,
             'book_id' => $this->book_id,
+            'book_title' => $this->book->judul,
             'borrow_date' => $this->borrow_date,
             'due_date' => $this->due_date,
+            'return_date' => $this->return_date,
+            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
             'status' => $this->status,
+            'denda' => $this->denda,
+            'notes' => $this->notes,
         ];
     }
 }

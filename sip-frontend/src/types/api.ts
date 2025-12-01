@@ -64,9 +64,12 @@ export type BookSummaryResponse = ApiResponse<BookSummary>;
 export interface BorrowRecord {
   id: string;
   book_id: number;
+  book_title: string;
   borrow_date: string;
   due_date: string;
   return_date?: string | null;
+  created_at: string;
+  updated_at: string;
   status: 'Pending' | 'Dipinjam' | 'Selesai' | string;
   denda?: number | null;
   notes?: string | null;

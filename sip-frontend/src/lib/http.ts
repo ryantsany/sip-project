@@ -31,8 +31,6 @@ async function request<T>(endpoint: string, options: HttpOptions = {}): Promise<
         return {} as T;
     }
 
-    console.log('HTTP Response:', response);
-
     // Handle unauthoized and unauthenticated responses
     if (response.status === 401 || response.status === 403) {
         console.log('Unauthorized or unauthenticated. Redirecting to login.');

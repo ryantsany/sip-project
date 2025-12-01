@@ -1,74 +1,52 @@
 "use client";
 
-import React, { useState } from "react";
-import { Bell, Search } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { Bell, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar"; // Import Sidebar Baru
+import { http } from "@/lib/http";
+import { BorrowListResponse, BorrowRecord } from "@/types/api";
 
-type BorrowRecord = {
-  id: number;
-  title: string;
-  borrowDate: string;
-  dueDate: string;
-  returnDate: string;
-  status: "Dikembalikan" | "Tenggat" | "Dipinjam" | "Pending";
-};
-
-const borrowData: BorrowRecord[] = [
-  {
-    id: 1,
-    title: "Blue Box Vol. 9",
-    borrowDate: "12-11-2025",
-    dueDate: "25-11-2025",
-    returnDate: "22-11-2025",
-    status: "Dikembalikan",
-  },
-  {
-    id: 2,
-    title: "Blue Box Vol. 9",
-    borrowDate: "12-11-2025",
-    dueDate: "25-11-2025",
-    returnDate: "22-11-2025",
-    status: "Tenggat",
-  },
-  {
-    id: 3,
-    title: "Blue Box Vol. 9",
-    borrowDate: "12-11-2025",
-    dueDate: "25-11-2025",
-    returnDate: "22-11-2025",
-    status: "Dikembalikan",
-  },
-  {
-    id: 4,
-    title: "Blue Box Vol. 1",
-    borrowDate: "10-11-2025",
-    dueDate: "24-11-2025",
-    returnDate: "20-11-2025",
-    status: "Dikembalikan",
-  },
-  {
-    id: 5,
-    title: "Harry Potter",
-    borrowDate: "12-11-2025",
-    dueDate: "25-11-2025",
-    returnDate: "-",
-    status: "Dipinjam",
-  },
-];
 
 export default function RiwayatPinjam() {
   const [activeFilter, setActiveFilter] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
+  const [borrowingList, setBorrowingList] = useState<BorrowRecord[]>([]);
+  const [isLoadingList, setIsLoadingList] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const filteredData = borrowData.filter((item) => {
+  const fetchBorrowingList = useCallback(async () => {
+    try {
+      setIsLoadingList(true);
+      setFetchError(null);
+      const response = await http.get<BorrowListResponse>("/pinjam-buku");
+      setBorrowingList(response.data);
+    } catch (error) {
+      console.error("Failed to fetch borrowings:", error);
+      setFetchError("Gagal memuat riwayat peminjaman.");
+    } finally {
+      setIsLoadingList(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBorrowingList();
+  }, [fetchBorrowingList]);
+
+  const filteredData = borrowingList.filter((item) => {
     const matchStatus =
       activeFilter === "Semua" || item.status === activeFilter;
-    const matchSearch = item.title
+    const matchSearch = item.book_title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
 
     return matchStatus && matchSearch;
+  });
+
+  const sortedData = filteredData.sort((a, b) => {
+    const dateA = new Date(a.borrow_date).getTime();
+    const dateB = new Date(b.borrow_date).getTime();
+    return dateB - dateA; // Urutkan dari terbaru ke terlama
   });
 
   return (
@@ -137,26 +115,60 @@ export default function RiwayatPinjam() {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50 transition-colors border-b border-gray-50 last:border-none">
-                    <td className="p-6">
-                      <span className="font-semibold text-slate-700 block w-max">{item.title}</span>
-                    </td>
-                    <td className="p-6 text-center text-slate-500">{item.borrowDate}</td>
-                    <td className="p-6 text-center text-slate-500">{item.dueDate}</td>
-                    <td className="p-6 text-center text-slate-500">{item.returnDate}</td>
-                    <td className="p-6 text-center">
-                      <StatusBadge status={item.status} />
+                {isLoadingList && (
+                  <tr>
+                    <td colSpan={5} className="p-10 text-center text-[#4F4F4F]">
+                      <div className="flex flex-col items-center justify-center gap-3">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        <p className="text-sm font-medium">Memuat riwayat peminjaman...</p>
+                      </div>
                     </td>
                   </tr>
-                ))}
-                {filteredData.length === 0 && (
+                )}
+
+                {!isLoadingList && fetchError && (
+                  <tr>
+                    <td colSpan={5} className="p-10 text-center text-red-500">
+                      <div className="flex flex-col items-center gap-3">
+                        <p className="text-sm font-semibold">{fetchError}</p>
+                        <button
+                          onClick={fetchBorrowingList}
+                          className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+                        >
+                          Coba Lagi
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {!isLoadingList && !fetchError && sortedData.length === 0 && (
                   <tr>
                     <td colSpan={5} className="p-10 text-center text-gray-400">
                       Tidak ada riwayat peminjaman ditemukan.
                     </td>
                   </tr>
                 )}
+
+                {!isLoadingList && !fetchError &&
+                  sortedData.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-slate-50 transition-colors border-b border-gray-50 last:border-none"
+                    >
+                      <td className="p-6">
+                        <span className="font-semibold text-slate-700 block w-max">
+                          {item.book_title}
+                        </span>
+                      </td>
+                      <td className="p-6 text-center text-slate-500">{item.borrow_date}</td>
+                      <td className="p-6 text-center text-slate-500">{item.due_date}</td>
+                      <td className="p-6 text-center text-slate-500">{item.return_date ?? "-"}</td>
+                      <td className="p-6 text-center">
+                        <StatusBadge status={item.status} />
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
