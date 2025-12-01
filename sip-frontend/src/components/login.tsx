@@ -44,7 +44,7 @@ export default function LoginPage() {
       }
     } catch (err: unknown) {
       console.error("Login error:", err);
-      let message = "Login gagal. Silakan coba lagi.";
+      const message = "Login gagal. Silakan coba lagi.";
       
       setError(message);
       setLoading(false);

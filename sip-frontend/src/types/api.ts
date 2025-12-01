@@ -59,6 +59,7 @@ export interface Paginated<T> {
 
 export type BooksResponse = ApiResponse<Paginated<BookSummary>>;
 export type LatestBooksResponse = ApiResponse<BookSummary[]>;
+export type BookSummaryResponse = ApiResponse<BookSummary>;
 
 export interface BorrowRecord {
   id: string;

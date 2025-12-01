@@ -186,15 +186,14 @@ function BookCardSkeleton() {
 }
 
 function BookCard({ book }: { book: BookSummary }) {
-  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000/api";
-  const ASSET_BASE = API_BASE.replace(/\/api\/?$/, "");
-  console.log("Book cover URL:", ASSET_BASE + book.cover_url)
+  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const ASSET_BASE = API_BASE?.replace(/\/api\/?$/, "");
   return (
-    <Link href="/detailbuku" className="block h-full">
+    <Link href={`/detailbuku?buku=${book.slug}`} className="block h-full">
       <div className="group relative aspect-[2/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer bg-gray-200">
         <Image
           src={`${ASSET_BASE}${book.cover_url}`}
-          alt={book.judul}
+          alt={book.judul}  
           fill
           className="object-cover transition-transform group-hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
