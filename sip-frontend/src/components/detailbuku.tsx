@@ -36,6 +36,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { BookSummary, BookSummaryResponse } from "@/types/api";
+import { toast } from "sonner";
 
 const FALLBACK_COVER = "/bluebox17.jpeg";
 const FALLBACK_TITLE = "Detail Buku";
@@ -46,6 +47,10 @@ export default function DetailBuku() {
     const [bookSummary, setBookSummary] = useState<BookSummary | null>(null);
     const [isLoadingBook, setIsLoadingBook] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
+
+    // STATE FOR DIALOG 
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
     const ASSET_BASE = API_BASE?.replace(/\/api\/?$/, "");
 
@@ -78,7 +83,20 @@ export default function DetailBuku() {
 
     const handlePinjam = () => {
         const formattedDate = date ? format(date, "dd MMMM yyyy", { locale: id }) : "Belum dipilih";
-        alert(`Buku berhasil dipinjam! Tanggal: ${formattedDate}`);
+
+        setIsDialogOpen(false);
+
+        toast.success("Berhasil Meminjam Buku!", {
+            description: `Buku "${bookSummary?.judul}" berhasil dipinjam untuk tanggal ${formattedDate}.`,
+            duration: 5000, 
+            
+            action: {
+                label: "Lihat",
+                onClick: () => {
+                    window.location.href = "/riwayatpinjam";
+                },
+            },
+        });
     };
 
     const detailTitle = bookSummary?.judul ?? (fetchError ? "Gagal memuat buku" : FALLBACK_TITLE);
@@ -211,7 +229,7 @@ export default function DetailBuku() {
 
                             {/* --- FOOTER: TOMBOL & MODAL --- */}
                             <div className="flex justify-end ">
-                                <Dialog>
+                                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                                     <DialogTrigger asChild>
                                         <Button className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-6 rounded-xl font-bold text-lg">
                                             Pinjam
@@ -228,7 +246,7 @@ export default function DetailBuku() {
                                         {/* --- DATE PICKER INPUT --- */}
                                         <div className="grid gap-2 py-2">
                                             <label className="text-sm font-semibold text-slate-600">
-                                                Tanggal Peminjaman
+                                                Tanggal Pengambilan
                                             </label>
                                             
                                             <Popover>

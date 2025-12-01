@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
-import Sidebar from "@/components/sidebar"; // Import Sidebar Baru
+import Sidebar from "@/components/sidebar"; 
 import { BookSummary, LatestBooksResponse } from "@/types/api";
 
 export default function Dashboard() {
