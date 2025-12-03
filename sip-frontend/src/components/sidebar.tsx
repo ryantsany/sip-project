@@ -56,10 +56,10 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
           ) : (
             <>
               <p className="text-sm font-bold truncate">
-                {role === 'admin' ? "Pamedi" : (user?.nama || "Admin User")}
+                {user?.nama}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                {role === 'admin' ? "Librarian" : (user?.nomor_induk || "Admin ID")}
+                {user?.nomor_induk}
               </p>
             </>
           )}

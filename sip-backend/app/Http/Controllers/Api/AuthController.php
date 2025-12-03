@@ -77,7 +77,7 @@ class AuthController extends Controller
                 if($user->role == 'siswa' || $user->role == 'guru') {
                     return ResponseFormatter::success(['redirect_url' => config('app.frontend_url') . '/dashboard', 'token' => $token]);
                 } else {
-                    return ResponseFormatter::success(['redirect_url' => config('app.frontend_url') . '/admin', 'token' => $token]);
+                    return ResponseFormatter::success(['redirect_url' => config('app.frontend_url') . '/admin/dashboard', 'token' => $token]);
                 }
             }
 

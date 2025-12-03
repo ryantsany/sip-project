@@ -12,6 +12,8 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
     Route::post('/tambah-buku', [App\Http\Controllers\Api\BookController::class, 'addNewBook']);
     Route::post('/edit-buku/{slug}', [App\Http\Controllers\Api\BookController::class, 'editBook']);
     Route::delete('/book/{slug}', [App\Http\Controllers\Api\BookController::class, 'deleteBook']);
+
+    Route::get('/admin/dashboard/borrowings', [App\Http\Controllers\Api\BorrowController::class, 'adminDashboardBorrowings']);
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function () {

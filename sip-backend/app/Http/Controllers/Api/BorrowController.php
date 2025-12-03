@@ -83,5 +83,29 @@ class BorrowController extends Controller
 
         return ResponseFormatter::success($borrowing->api_response, 'Buku telah dikembalikan');
     }
-    
+
+    public function adminDashboardBorrowings(){
+        $borrowings = Borrowing::with('book', 'user')->get();
+        $books = Book::all();
+
+        $borrowings = $borrowings->map(function($borrowing){
+            return $borrowing->admin_dashboard_response;
+        });
+
+        $data = [
+            'total_books' => $books->count(),
+            'total_borrowings' => $borrowings->count(),
+            'total_pending' => $borrowings->where('status', 'Pending')->count(),
+            'total_active' => $borrowings->where('status', 'Dipinjam')->count(),
+            'total_overdue' => $borrowings->where('status', 'Terlambat')->count(),
+            'total_returned' => $borrowings->where('status', 'Dikembalikan')->count(),
+            'books_added_this_month' => $books->where('created_at', '>=', now()->startOfMonth()->format('Y-m-d'))->count(),
+            'books_borrowed_this_month' => $borrowings->where('borrow_date', '>=', now()->startOfMonth()->format('Y-m-d'))->whereIn('status', ['Dipinjam', 'Dikembalikan'])->count(),
+            'books_overdue_this_month' => $borrowings->where('status', 'Terlambat')->where('borrow_date', '>=', now()->startOfMonth()->format('Y-m-d'))->count(),
+            'pending_borrowings' => $borrowings->where('status', 'Pending')->values()->take(3),
+            'late_borrowings' => $borrowings->where('status', 'Terlambat')->values()->take(3),
+        ];
+
+        return ResponseFormatter::success($data);
+    }
 }

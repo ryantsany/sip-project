@@ -31,7 +31,6 @@ export default function Dashboard() {
         setIsLoadingBooks(true);
         const response = await http.get<LatestBooksResponse>("/books-latest");
         setBooks(response.data);
-        console.log("Fetched Books:", response.data[0].judul);
       } catch (error) {
         console.error("Failed to fetch Books:", error);
       } finally {

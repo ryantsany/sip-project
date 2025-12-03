@@ -57,4 +57,18 @@ class Borrowing extends Model
             'notes' => $this->notes,
         ];
     }
+
+    public function getAdminDashboardResponseAttribute()
+    {
+        return [
+            'peminjam' => $this->user->nama,
+            'book_title' => $this->book->judul,
+            'borrow_date' => $this->borrow_date,
+            'due_date' => $this->due_date,
+            'return_date' => $this->return_date,
+            'status' => $this->status,
+            'denda' => $this->denda,
+            'notes' => $this->notes,
+        ];
+    }
 }

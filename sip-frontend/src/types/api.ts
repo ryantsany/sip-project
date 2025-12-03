@@ -102,3 +102,31 @@ export interface CreatedUser {
   updated_at: string;
 }
 export type AddUserResponse = ApiResponse<{ user: CreatedUser }>;
+
+
+export interface AdminDashBorrowRecord {
+  peminjam: string;
+  book_title: string;
+  borrow_date: string;
+  due_date: string;
+  return_date?: string | null;
+  status: 'Pending' | 'Dipinjam' | 'Selesai' | string;
+  denda?: number | null;
+  notes?: string | null;
+}
+
+export interface AdminDashboardData {
+  total_books: number;
+  total_borrowings: number;
+  total_pending: number;
+  total_active: number;
+  total_overdue: number;
+  total_returned: number;
+  books_added_this_month: number;
+  books_borrowed_this_month: number;
+  books_overdue_this_month: number;
+  pending_borrowings: AdminDashBorrowRecord[];
+  late_borrowings: AdminDashBorrowRecord[];
+}
+
+export type AdminDashboardResponse = ApiResponse<AdminDashboardData>;
