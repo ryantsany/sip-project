@@ -50,6 +50,7 @@ export default function KelolaBuku() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [slug, setSlug] = useState<string | null>(null);
+        const [confirmDeleteSlug, setConfirmDeleteSlug] = useState<string | null>(null);
 
     const fetchBooks = async (page = 1, query = "") => {
         try {
@@ -113,6 +114,7 @@ export default function KelolaBuku() {
         setCoverFile(null);
         setIsEditing(false); 
         setIsDialogOpen(false);
+            setSlug(null);
     };
 
     // --- HANDLER: Edit Buku ---
@@ -232,8 +234,24 @@ export default function KelolaBuku() {
     };
 
     // --- HANDLER: Hapus Buku ---
-    const handleDelete = (id: number) => {
-    
+    const handleDelete = async () => {
+        if (!confirmDeleteSlug) return;
+        try {
+            setIsSubmitting(true);
+            await http.delete(`/book/${confirmDeleteSlug}`);
+            toast.success('Buku berhasil dihapus');
+            setConfirmDeleteSlug(null);
+
+            const isLastItemOnPage = books.length === 1 && currentPage > 1;
+            const nextPage = isLastItemOnPage ? currentPage - 1 : currentPage;
+            setCurrentPage(nextPage);
+            await fetchBooks(nextPage, appliedSearch);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Gagal menghapus buku.';
+            toast.error(message);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // --- HANDLER: Pagination ---
@@ -246,6 +264,7 @@ export default function KelolaBuku() {
     };
 
     return (
+        <>
         <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
         <Toaster position="top-center" />
         <Sidebar role="admin" />
@@ -439,7 +458,7 @@ export default function KelolaBuku() {
                                             {/* Tombol Hapus */}
                                             <button 
                                                 className="bg-red-50 p-2 rounded-lg text-red-600 hover:bg-red-100 transition-colors border border-red-200"
-                                                // onClick={() => handleDelete(book.id)}
+                                                onClick={() => setConfirmDeleteSlug(book.slug)}
                                             >
                                                 <Trash2 size={18} />
                                             </button>
@@ -497,8 +516,22 @@ export default function KelolaBuku() {
                     </Button>
                 </div>
             </div>
-
         </main>
         </div>
+        {confirmDeleteSlug && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">Hapus Buku</h3>
+                    <p className="text-slate-600 mb-6">Yakin ingin menghapus buku ini? Tindakan ini tidak dapat dibatalkan.</p>
+                    <div className="flex justify-end gap-3">
+                        <Button variant="outline" className="rounded-lg" onClick={() => setConfirmDeleteSlug(null)} disabled={isSubmitting}>Batal</Button>
+                        <Button className="bg-red-600 hover:bg-red-700 text-white rounded-lg" onClick={handleDelete} disabled={isSubmitting}>
+                            {isSubmitting ? 'Menghapus...' : 'Hapus'}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 }
