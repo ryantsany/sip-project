@@ -34,6 +34,24 @@ export interface BookSummary {
   slug: string;
 }
 
+export interface CreatedBook {
+  id: number;
+  judul: string;
+  cover_url: string | null;
+  pengarang: string;
+  penerbit: string;
+  tahun: number | string;
+  isbn: string;
+  deskripsi: string | null;
+  kategori: string | null;
+  jumlah: number;
+  stok: number;
+  status: string;
+  slug: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PaginationLinks {
   url: string | null;
   label: string;
@@ -60,6 +78,7 @@ export interface Paginated<T> {
 export type BooksResponse = ApiResponse<Paginated<BookSummary>>;
 export type LatestBooksResponse = ApiResponse<BookSummary[]>;
 export type BookSummaryResponse = ApiResponse<BookSummary>;
+export type AddBookResponse = ApiResponse<{ book: CreatedBook }>;
 
 export interface BorrowRecord {
   id: string;

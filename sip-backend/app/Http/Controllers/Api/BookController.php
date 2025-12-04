@@ -7,13 +7,12 @@ use App\Models\Book;
 use App\ResponseFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class BookController extends Controller
 {
     public function addNewBook(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'judul' => 'required|string|max:255',
             'cover_img' => 'nullable|image|max:2048',
             'penulis' => 'required|string|max:255',
@@ -26,7 +25,7 @@ class BookController extends Controller
             'status' => 'required|string|in:available,unavailable',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return ResponseFormatter::error(422, $validator->errors());
         }
 
@@ -60,8 +59,9 @@ class BookController extends Controller
         ]);
     }
 
-    public function editBook(Request $request, $slug){
-        $validator = Validator::make($request->all(),[
+    public function editBook(Request $request, $slug)
+    {
+        $validator = Validator::make($request->all(), [
             'judul' => 'sometimes|required|string|max:255',
             'cover_img' => 'sometimes|nullable|image|max:2048',
             'penulis' => 'sometimes|required|string|max:255',
@@ -75,7 +75,7 @@ class BookController extends Controller
             'status' => 'sometimes|required|string|in:available,unavailable',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return ResponseFormatter::error(422, $validator->errors());
         }
 
@@ -86,31 +86,31 @@ class BookController extends Controller
 
         $payload = $validator->validated();
 
+        $coverUrl = $book->cover_url;
         if ($request->hasFile('cover_img')) {
             $coverPath = $request->file('cover_img')->store('covers', 'public');
-            $payload['cover_url'] = '/storage/' . $coverPath;
-        } else {
-            $payload['cover_url'] = null;
+            $coverUrl = '/storage/' . $coverPath;
         }
 
         $book->update([
-            'judul' => $payload['judul'],
-            'cover_url' => $payload['cover_url'],
-            'pengarang' => $payload['penulis'],
-            'penerbit' => $payload['penerbit'],
-            'tahun' => $payload['tahun'],
-            'isbn' => $payload['isbn'],
-            'deskripsi' => $payload['deskripsi'],
-            'kategori' => $payload['kategori'],
-            'jumlah' => $payload['jumlah'],
-            'stok' => $payload['stok'],
-            'status' => $payload['status'],
+            'judul' => $payload['judul'] ?? $book->judul,
+            'cover_url' => $coverUrl,
+            'pengarang' => $payload['penulis'] ?? $book->pengarang,
+            'penerbit' => $payload['penerbit'] ?? $book->penerbit,
+            'tahun' => $payload['tahun'] ?? $book->tahun,
+            'isbn' => $payload['isbn'] ?? $book->isbn,
+            'deskripsi' => array_key_exists('deskripsi', $payload) ? $payload['deskripsi'] : $book->deskripsi,
+            'kategori' => array_key_exists('kategori', $payload) ? $payload['kategori'] : $book->kategori,
+            'jumlah' => $payload['jumlah'] ?? $book->jumlah,
+            'stok' => $payload['stok'] ?? $book->stok,
+            'status' => $payload['status'] ?? $book->status,
         ]);
 
         return ResponseFormatter::success($book->api_response, ['Buku berhasil diperbarui']);
     }
 
-    public function deleteBook($slug){
+    public function deleteBook($slug)
+    {
         $book = Book::where('slug', $slug)->first();
         if (!$book) {
             return ResponseFormatter::error(404, null, ['Buku tidak ditemukan']);
@@ -121,24 +121,27 @@ class BookController extends Controller
         return ResponseFormatter::success(null, ['Buku berhasil dihapus']);
     }
 
-    public function getAllBooks(){
+    public function getAllBooks()
+    {
         $books = Book::orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->through(fn (Book $book) => $book->api_response);
+            ->paginate(6)
+            ->through(fn(Book $book) => $book->api_response);
 
         return ResponseFormatter::success($books);
     }
 
-    public function getFourLatestBooks(){
+    public function getFourLatestBooks()
+    {
         $books = Book::orderBy('created_at', 'desc')
             ->take(4)
             ->get()
-            ->map(fn (Book $book) => $book->api_response);
+            ->map(fn(Book $book) => $book->api_response);
 
         return ResponseFormatter::success($books);
     }
 
-    public function getBookDetails($slug){
+    public function getBookDetails($slug)
+    {
         $book = Book::where('slug', $slug)->first();
 
         if (!$book) {
@@ -148,7 +151,8 @@ class BookController extends Controller
         return ResponseFormatter::success($book->api_response);
     }
 
-    public function searchBooks(Request $request){
+    public function searchBooks(Request $request)
+    {
         $query = $request->input('query');
 
         $books = Book::where('judul', 'like', '%' . $query . '%')
@@ -156,7 +160,7 @@ class BookController extends Controller
             ->orWhere('isbn', 'like', '%' . $query . '%')
             ->orderBy('created_at', 'desc')
             ->paginate(10)
-            ->through(fn (Book $book) => $book->api_response);
+            ->through(fn(Book $book) => $book->api_response);
 
         return ResponseFormatter::success($books);
     }

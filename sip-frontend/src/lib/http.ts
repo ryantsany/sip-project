@@ -5,19 +5,21 @@ type HttpOptions = RequestInit & {
 };
 
 async function request<T>(endpoint: string, options: HttpOptions = {}): Promise<T> {
-    const { headers, ...rest } = options;
+    const { headers, body, ...rest } = options;
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
 
     const config = {
         ...rest,
+        body,
         headers: {
-            'Content-Type': 'application/json',
             'Accept': 'application/json',
             ...(token && { 'Authorization': `Bearer ${token}` }),
+            ...(!isFormData && { 'Content-Type': 'application/json' }),
             ...headers,
         },
-    };
+    } as RequestInit;
 
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
@@ -48,4 +50,5 @@ export const http = {
     post: <T>(endpoint: string, body: unknown, options?: HttpOptions) => request<T>(endpoint, { ...options, method: 'POST', body: JSON.stringify(body) }),
     put: <T>(endpoint: string, body: unknown, options?: HttpOptions) => request<T>(endpoint, { ...options, method: 'PUT', body: JSON.stringify(body) }),
     delete: <T>(endpoint: string, options?: HttpOptions) => request<T>(endpoint, { ...options, method: 'DELETE' }),
+    postForm: <T>(endpoint: string, body: FormData, options?: HttpOptions) => request<T>(endpoint, { ...options, method: 'POST', body }),
 };
