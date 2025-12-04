@@ -416,7 +416,7 @@ export default function KelolaBuku() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-gray-100">
+                            <tr className="border-b border-gray-100 bg-gray-50/50">
                                 <th className="p-6 font-bold text-slate-700">Cover</th>
                                 <th className="p-6 font-bold text-slate-700">Judul</th>
                                 <th className="p-6 font-bold text-slate-700">Penulis</th>
