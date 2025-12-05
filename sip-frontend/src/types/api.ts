@@ -96,6 +96,22 @@ export interface BorrowRecord {
 export type BorrowListResponse = ApiResponse<BorrowRecord[]>;
 export type BorrowCreateResponse = ApiResponse<Pick<BorrowRecord, 'id' | 'book_id' | 'borrow_date' | 'due_date' | 'status'>>;
 
+export interface ManageBorrowingRecord {
+  id: string;
+  borrower: string | null;
+  nomor_induk: string | null;
+  kelas: string | null;
+  book_title: string | null;
+  book_slug: string | null;
+  borrow_date: string | null;
+  due_date: string | null;
+  return_date: string | null;
+  status: 'Pending' | 'Dipinjam' | 'Dikembalikan' | 'Tenggat' | 'Terlambat' | string;
+  denda: number | null;
+  notes: string | null;
+}
+export type ManageBorrowingsResponse = ApiResponse<{ borrowings: ManageBorrowingRecord[] }>;
+
 export interface UserListItem {
   nama: string;
   nomor_induk: string;

@@ -39,51 +39,6 @@ class BorrowController extends Controller
         return ResponseFormatter::success($borrowings);
     }
 
-    public function extendBorrow(Request $request, $slug){
-        $borrowing = Borrowing::where('slug', $slug)->first();
-
-        if(!$borrowing){
-            return ResponseFormatter::error(404, null, 'Peminjaman tidak ditemukan');
-        }
-
-        if($borrowing->status !== 'Dipinjam'){
-            return ResponseFormatter::error(400, null, 'Peminjaman tidak dapat diperpanjang');
-        }
-
-        $borrowing->due_date = date('Y-m-d', strtotime($borrowing->due_date. ' + 7 days'));
-        $borrowing->save();
-
-        return ResponseFormatter::success($borrowing->api_response, 'Peminjaman berhasil diperpanjang');
-    }
-
-    public function adminAcceptBorrow(Request $request, $slug){
-        $borrowing = Borrowing::where('slug', $slug)->first();
-
-        if(!$borrowing){
-            return ResponseFormatter::error(404, null, 'Peminjaman tidak ditemukan');
-        }
-
-        $borrowing->status = 'Dipinjam';
-        $borrowing->due_date = now()->addDays(7)->format('Y-m-d');
-        $borrowing->save();
-
-        return ResponseFormatter::success($borrowing->api_response, 'Peminjaman diterima');
-    }
-
-    public function adminReturnBorrow(Request $request, $slug){
-        $borrowing = Borrowing::where('slug', $slug)->first();
-
-        if(!$borrowing){
-            return ResponseFormatter::error(404, null, 'Peminjaman tidak ditemukan');
-        }
-
-        $borrowing->status = 'Dikembalikan';
-        $borrowing->return_date = now()->format('Y-m-d');
-        $borrowing->save();
-
-        return ResponseFormatter::success($borrowing->api_response, 'Buku telah dikembalikan');
-    }
-
     public function adminDashboardBorrowings(){
         $borrowings = Borrowing::with('book', 'user')->get();
         $books = Book::all();
