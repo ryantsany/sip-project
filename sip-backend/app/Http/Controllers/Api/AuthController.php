@@ -8,43 +8,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\ResponseFormatter;
-use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
-    public function addUser(Request $request)
-    {
-        $validator = Validator::make($request->all(),[
-            'nama' => 'required|string|max:255',
-            'nomor_induk' => [
-                'required',
-                'string',
-                'max:32',
-                'unique:users',
-                'regex:/^(13136\d{5}|181432\d{4})$/',
-            ],
-            'role' => 'required|string|in:siswa,guru,admin,petugas',
-            'kelas' => 'nullable|string|max:32',
-        ]);
-
-        if($validator->fails()){
-            return ResponseFormatter::error(422, $validator->errors());
-        }
-
-        $user = User::create([
-            'nama' => $request->nama,
-            'nomor_induk' => $request->nomor_induk,
-            'role' => $request->role,
-            'kelas' => $request->kelas,
-        ]);
-
-        return ResponseFormatter::success([
-            'user' => $user,
-        ], [
-            'User berhasil dibuat'
-        ]);
-    }
-
     public function login(Request $request){
         $validator = Validator::make($request->all(),[
             'nomor_induk' => 'required|string|max:32',

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Search,
   Plus,
@@ -10,6 +10,7 @@ import {
   ChevronRight,
   X,
   ChevronDown, 
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -17,6 +18,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { http } from "@/lib/http";
+import { UsersResponse } from "@/types/api";
 
 import {
   Dialog,
@@ -29,56 +33,103 @@ import {
 
 // --- Tipe Data User ---
 type User = {
-  id: number;
   nomorInduk: string;
   nama: string;
-  kelas: string;
+  kelas: string | null;
   role: string;
   peminjamanAktif: number;
 };
 
-// --- Data Dummy ---
-const initialUsers: User[] = [
-  { id: 1, nomorInduk: "1313623056", nama: "Fadil Bukan Jaidi", kelas: "10 MIPA 1", role: "Siswa", peminjamanAktif: 0 },
-  { id: 2, nomorInduk: "1313623057", nama: "Jarwo Situmorang", kelas: "12 IPS 3", role: "Siswa", peminjamanAktif: 2 },
-  { id: 3, nomorInduk: "1313623058", nama: "Heru Budi", kelas: "11 MIPA 4", role: "Siswa", peminjamanAktif: 5 },
-  { id: 4, nomorInduk: "1313623059", nama: "Steve Harrington", kelas: "11 IPS 1", role: "Siswa", peminjamanAktif: 1 },
-  { id: 5, nomorInduk: "1313623060", nama: "Adolf Hutler", kelas: "10 IPS 2", role: "Siswa", peminjamanAktif: 1 },
-  { id: 6, nomorInduk: "1313623061", nama: "Dustin Henderson", kelas: "12 MIPA 2", role: "Siswa", peminjamanAktif: 3 },
-  { id: 7, nomorInduk: "1313623062", nama: "Mike Wheelers", kelas: "12 MIPA 2", role: "Siswa", peminjamanAktif: 1 },
-  { id: 8, nomorInduk: "1313623063", nama: "Hank Schrader", kelas: "12 IPS 2", role: "Siswa", peminjamanAktif: 4 },
-];
-
 export default function KelolaUser() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState<User[]>(initialUsers);
-
-  // --- STATE PAGINATION ---
+  const [users, setUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentId, setCurrentId] = useState<number | null>(null);
+  const [currentNomorInduk, setCurrentNomorInduk] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [paginationInfo, setPaginationInfo] = useState<{
+    current_page: number;
+    last_page: number;
+    total: number;
+    per_page: number;
+    from: number;
+    to: number;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     nama: "",
     nomorInduk: "",
     kelas: "",
-    role: "",
+    role: "siswa",
   });
+  const [isDeletingNomorInduk, setIsDeletingNomorInduk] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // --- LOGIKA FILTER & PAGINATION ---
-  const filteredUsers = users.filter((user) =>
-      user.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.nomorInduk.includes(searchQuery)
-  );
+  const hydrateUsers = useCallback((payload: UsersResponse["data"]) => {
+    const normalizedUsers: User[] = payload.data.map((user) => ({
+      nomorInduk: user.nomor_induk,
+      nama: user.nama,
+      kelas: user.kelas,
+      role: user.role,
+      peminjamanAktif: user.peminjaman_aktif,
+    }));
 
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+    setUsers(normalizedUsers);
+    setPaginationInfo({
+      current_page: payload.current_page,
+      last_page: payload.last_page,
+      total: payload.total,
+      per_page: payload.per_page,
+      from: payload.from ?? 0,
+      to: payload.to ?? 0,
+    });
+  }, []);
+
+  const loadUsers = useCallback(async (page: number, query: string) => {
+    const trimmed = query.trim();
+    const endpoint = trimmed
+      ? `/search-users?query=${encodeURIComponent(trimmed)}&page=${page}`
+      : `/users?page=${page}`;
+    const response = await http.get<UsersResponse>(endpoint);
+    return response.data;
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+    const delay = searchQuery.trim() ? 400 : 0;
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsLoading(true);
+        const payload = await loadUsers(currentPage, searchQuery);
+        if (!isActive) return;
+        hydrateUsers(payload);
+        setError(null);
+      } catch (err) {
+        if (!isActive) return;
+        console.error("Failed to fetch users:", err);
+        setUsers([]);
+        setPaginationInfo(null);
+        setError("Gagal memuat data user.");
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    }, delay);
+
+    return () => {
+      isActive = false;
+      clearTimeout(timer);
+    };
+  }, [currentPage, searchQuery, loadUsers, hydrateUsers]);
+
+  // --- PAGINATION DATA DARI SERVER ---
+  const totalPages = paginationInfo?.last_page ?? 1;
+  const totalItems = paginationInfo?.total ?? users.length;
+  const currentUsers = users;
 
   // --- HANDLER PAGINATION ---
   const handlePrevPage = () => {
@@ -95,10 +146,10 @@ export default function KelolaUser() {
       nama: "",
       nomorInduk: "",
       kelas: "",
-      role: "",
+      role: "siswa",
     });
     setIsEditing(false);
-    setCurrentId(null);
+    setCurrentNomorInduk(null);
     setIsDialogOpen(false);
   };
 
@@ -106,11 +157,11 @@ export default function KelolaUser() {
     setFormData({
       nama: user.nama,
       nomorInduk: user.nomorInduk,
-      kelas: user.kelas,
+      kelas: user.kelas ?? "",
       role: user.role,
     });
     setIsEditing(true);
-    setCurrentId(user.id);
+    setCurrentNomorInduk(user.nomorInduk);
     setIsDialogOpen(true);
   };
 
@@ -119,29 +170,59 @@ export default function KelolaUser() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
+  const handleDelete = async (nomorInduk: string) => {
+    const confirmed = window.confirm("Yakin ingin menghapus user ini?");
+    if (!confirmed) return;
+
+    try {
+      setIsDeletingNomorInduk(nomorInduk);
+      await http.delete(`/delete-user/${nomorInduk}`);
+      toast.success("User berhasil dihapus.");
+      const payload = await loadUsers(currentPage, searchQuery);
+      hydrateUsers(payload);
+      setError(null);
+    } catch (err) {
+      console.error("Failed to delete user:", err);
+      toast.error("Gagal menghapus user.");
+    } finally {
+      setIsDeletingNomorInduk(null);
+    }
+  };
+
+  const handleSave = async () => {
     if (!formData.nama || !formData.nomorInduk || !formData.role) {
       toast.error("Semua field wajib diisi!");
       return;
     }
 
-    if (isEditing && currentId !== null) {
-      setUsers(
-        users.map((user) =>
-          user.id === currentId ? { ...user, ...formData } : user
-        )
-      );
-      toast.success("Data User Diperbarui!");
-    } else {
-      const newUser: User = {
-        id: Date.now(),
-        ...formData,
-        peminjamanAktif: 0,
-      };
-      setUsers([newUser, ...users]);
-      toast.success("User Berhasil Ditambahkan!");
+    const payload = {
+      nama: formData.nama.trim(),
+      kelas: formData.kelas.trim() || null,
+      role: formData.role,
+    };
+
+    try {
+      setIsSubmitting(true);
+      if (isEditing && currentNomorInduk !== null) {
+        await http.put(`/update-user/${currentNomorInduk}`, payload);
+        toast.success("Data user diperbarui.");
+      } else {
+        await http.post("/add-user", payload);
+        toast.success("User berhasil ditambahkan.");
+      }
+
+      const refreshed = await loadUsers(currentPage, searchQuery);
+      hydrateUsers(refreshed);
+      setError(null);
+      resetForm();
+    } catch (error) {
+      console.error("Failed to save user:", error);
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan user.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
-    resetForm();
   };
 
   return (
@@ -188,7 +269,7 @@ export default function KelolaUser() {
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="fixed !left-1/2 !top-1/2 z-50 w-full max-w-[600px] !-translate-x-1/2 !-translate-y-1/2 bg-white p-8 rounded-2xl shadow-2xl border border-gray-200">
+            <DialogContent className="sm:max-w-[600px] rounded-2xl border border-gray-200 bg-white p-8 shadow-2xl">
               <div
                 className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 hover:bg-slate-100 p-1 cursor-pointer"
                 onClick={resetForm}
@@ -209,6 +290,7 @@ export default function KelolaUser() {
                     name="nomorInduk"
                     value={formData.nomorInduk}
                     onChange={handleInputChange}
+                    disabled={isEditing || isSubmitting}
                     className="h-11 w-full rounded-full border border-slate-400 bg-white px-5 text-base focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
@@ -219,6 +301,7 @@ export default function KelolaUser() {
                     value={formData.nama}
                     onChange={handleInputChange}
                     className="h-11 w-full rounded-full border border-slate-400 bg-white px-5 text-base focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    disabled={isSubmitting}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-6">
@@ -230,6 +313,7 @@ export default function KelolaUser() {
                       onChange={handleInputChange}
                       className="h-11 w-full rounded-full border border-slate-400 bg-white px-5 text-base focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       placeholder="Jika admin, kosongkan saja"
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -240,9 +324,12 @@ export default function KelolaUser() {
                         value={formData.role}
                         onChange={handleInputChange}
                         className="h-11 w-full appearance-none rounded-full border border-slate-400 bg-white px-5 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-700"
+                        disabled={isSubmitting}
                       >
-                        <option value="Siswa">Siswa</option>
-                        <option value="Admin">Admin</option>
+                        <option value="siswa">Siswa</option>
+                        <option value="guru">Guru</option>
+                        <option value="petugas">Petugas</option>
+                        <option value="admin">Admin</option>
                       </select>
                       <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
                         <ChevronDown size={18} className="text-slate-600" />
@@ -253,12 +340,39 @@ export default function KelolaUser() {
               </div>
 
               <DialogFooter className="mt-8 flex gap-3 sm:justify-end">
-                <Button type="button" onClick={resetForm} className="h-10 rounded-xl bg-red-600 px-8 font-bold text-white hover:bg-red-700">Batal</Button>
-                <Button type="button" onClick={handleSave} className="h-10 rounded-xl bg-blue-600 px-8 font-bold text-white hover:bg-blue-700">Simpan</Button>
+                <Button
+                  type="button"
+                  onClick={resetForm}
+                  className="h-10 rounded-xl bg-red-600 px-8 font-bold text-white hover:bg-red-700"
+                  disabled={isSubmitting}
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSave}
+                  className="h-10 rounded-xl bg-blue-600 px-8 font-bold text-white hover:bg-blue-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Menyimpan...
+                    </span>
+                  ) : (
+                    "Simpan"
+                  )}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
+
+        {error && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* --- TABLE USER --- */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -274,15 +388,23 @@ export default function KelolaUser() {
                 </tr>
               </thead>
               <tbody>
-                {currentUsers.length > 0 ? (
-                    currentUsers.map((user) => (
+                {isLoading ? (
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <tr key={index} className="border-b border-gray-50 last:border-none">
+                      <td colSpan={5} className="p-6">
+                        <Skeleton className="h-6 w-full" />
+                      </td>
+                    </tr>
+                  ))
+                ) : currentUsers.length > 0 ? (
+                  currentUsers.map((user) => (
                     <tr
-                      key={user.id}
+                      key={user.nomorInduk}
                       className="hover:bg-slate-50 transition-colors border-b border-gray-50 last:border-none"
                     >
                       <td className="p-6 text-slate-600 text-center">{user.nomorInduk}</td>
                       <td className="p-6 text-slate-600">{user.nama}</td>
-                      <td className="p-6 text-slate-600">{user.kelas}</td>
+                      <td className="p-6 text-slate-600">{user.kelas ?? "-"}</td>
                       <td className="p-6 text-slate-600 text-center">{user.peminjamanAktif}</td>
                       <td className="p-6 text-center">
                         <div className="flex justify-center gap-4">
@@ -293,21 +415,27 @@ export default function KelolaUser() {
                             <Pencil size={18} />
                           </button>
                           <button
-                            className="bg-red-50 p-2 rounded-lg text-red-600 hover:bg-red-100 transition-colors border border-red-200"
-                            onClick={() => setUsers(users.filter((u) => u.id !== user.id))}
+                            type="button"
+                            className="bg-red-50 p-2 rounded-lg text-red-600 hover:bg-red-100 transition-colors border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => handleDelete(user.nomorInduk)}
+                            disabled={isDeletingNomorInduk === user.nomorInduk}
                           >
-                            <Trash2 size={18} />
+                            {isDeletingNomorInduk === user.nomorInduk ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 size={18} />
+                            )}
                           </button>
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
-                    <tr>
-                        <td colSpan={5} className="p-8 text-center text-gray-500">
-                            Tidak ada data siswa ditemukan.
-                        </td>
-                    </tr>
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-gray-500">
+                      {error ?? "Tidak ada data user ditemukan."}
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
@@ -317,7 +445,7 @@ export default function KelolaUser() {
         {/* --- PAGINATION CONTROLS --- */}
         <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
           <p className="text-slate-500 text-sm">
-            Menampilkan {currentUsers.length} dari {filteredUsers.length} hasil 
+            Menampilkan {currentUsers.length} dari {totalItems} hasil {" "}
             (Halaman {currentPage} dari {totalPages || 1})
           </p>
           <div className="flex gap-2">
@@ -326,7 +454,7 @@ export default function KelolaUser() {
                 size="icon" 
                 className="rounded-full h-10 w-10 border-gray-300 text-slate-600 hover:bg-gray-100 disabled:opacity-50"
                 onClick={handlePrevPage}
-                disabled={currentPage === 1}
+                disabled={currentPage === 1 || isLoading}
             >
               <ChevronLeft size={20} />
             </Button>
@@ -335,7 +463,7 @@ export default function KelolaUser() {
                 size="icon" 
                 className="rounded-full h-10 w-10 border-gray-300 text-slate-600 hover:bg-gray-100 disabled:opacity-50"
                 onClick={handleNextPage}
-                disabled={currentPage >= totalPages || totalPages === 0}
+                disabled={currentPage >= totalPages || totalPages === 0 || isLoading}
             >
               <ChevronRight size={20} />
             </Button>

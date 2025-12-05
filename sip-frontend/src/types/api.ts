@@ -96,6 +96,15 @@ export interface BorrowRecord {
 export type BorrowListResponse = ApiResponse<BorrowRecord[]>;
 export type BorrowCreateResponse = ApiResponse<Pick<BorrowRecord, 'id' | 'book_id' | 'borrow_date' | 'due_date' | 'status'>>;
 
+export interface UserListItem {
+  nama: string;
+  nomor_induk: string;
+  kelas: string | null;
+  role: string;
+  peminjaman_aktif: number;
+}
+export type UsersResponse = ApiResponse<Paginated<UserListItem>>;
+
 export interface NotificationItem {
   id: number | string;
   tipe: string;
