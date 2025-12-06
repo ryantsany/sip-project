@@ -195,16 +195,16 @@ export default function KelolaPinjaman() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case "Dikembalikan":
-                return "bg-green-100 text-green-700";
+                return "bg-green-100 text-green-700 border border-green-200";
             case "Pending":
-                return "bg-[#FDF6B2] text-[#723B13]";
+                return "bg-[#FDF6B2] text-[#723B13] border border-yellow-200"; 
             case "Tenggat":
             case "Terlambat":
-                return "bg-red-100 text-red-600";
+                return "bg-red-100 text-red-600 border border-red-200";
             case "Dipinjam":
-                return "bg-blue-100 text-blue-700";
+                return "bg-blue-100 text-blue-700 border border-blue-200";
             default:
-                return "bg-gray-100 text-gray-700";
+                return "bg-gray-100 text-gray-700 border border-gray-200"; 
         }
     };
 
