@@ -44,8 +44,9 @@ class NotifyLateBorrowings extends Command
 
                     Notification::create([
                         'user_id' => $borrowing->user_id,
+                        'judul' => "Pemberitahuan Denda Terlambat Pengembalian Buku",
                         'tipe' => 'important',
-                        'pesan' => "Denda sebesar Rp 15.000 telah dikenakan untuk buku '{$borrowing->book->judul}' karena terlambat mengembalikan.",
+                        'pesan' => "Denda sebesar Rp 15.000 telah dikenakan untuk buku '{$borrowing->book->judul}' karena terlambat mengembalikan. Harap segera mengembalikan buku tersebut untuk menghindari denda tambahan.",
                     ]);
                 } else if($borrowing->denda > 0) {
                     $borrowing->denda += 2000;
@@ -54,8 +55,9 @@ class NotifyLateBorrowings extends Command
 
                     Notification::create([
                         'user_id' => $borrowing->user_id,
+                        'judul' => "Pemberitahuan Denda Terlambat Pengembalian Buku",
                         'tipe' => 'important',
-                        'pesan' => "Denda tambahan sebesar Rp 2.000 telah dikenakan untuk buku '{$borrowing->book->judul}' karena masih belum mengembalikan.",
+                        'pesan' => "Denda tambahan sebesar Rp 2.000 telah dikenakan untuk buku '{$borrowing->book->judul}' karena masih belum mengembalikan. Harap segera mengembalikan buku tersebut untuk menghindari denda tambahan.",
                     ]);
                 }
             }

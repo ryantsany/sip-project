@@ -39,8 +39,9 @@ class NotifyDueBorrowings extends Command
             
             Notification::create([
                 'user_id' => $borrowing->user_id,
+                'judul' => "Pemberitahuan Tenggat Pengembalian Buku",
                 'tipe' => 'important',
-                'pesan' => "Buku '{$borrowing->book->judul}' sudah mencapai tenggat pengembalian hari ini.",
+                'pesan' => "Buku '{$borrowing->book->judul}' sudah mencapai tenggat pengembalian hari ini. Harap segera mengembalikan buku tersebut untuk menghindari denda.",
             ]);
         }
 

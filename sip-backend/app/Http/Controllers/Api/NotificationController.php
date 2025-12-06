@@ -15,4 +15,24 @@ class NotificationController extends Controller
 
         return ResponseFormatter::success($notifications);
     }
+
+    public function markAsRead(Request $request, $notificationId){
+        $notification = $request->user()->notifications()->where('id', $notificationId)->first();
+
+        if(!$notification){
+            return ResponseFormatter::error(404, null, 'Notifikasi tidak ditemukan.');
+        }
+
+        $notification->markAsRead();
+
+        return ResponseFormatter::success(null, 'Notifikasi berhasil ditandai sebagai dibaca.');
+    }
+
+    public function getThreeLatestNotifications(Request $request){
+        $notifications = $request->user()->notifications()->orderBy('created_at', 'desc')->take(3)->get()->map(function($notification){
+            return $notification->api_response;
+        });
+
+        return ResponseFormatter::success($notifications);
+    }
 }

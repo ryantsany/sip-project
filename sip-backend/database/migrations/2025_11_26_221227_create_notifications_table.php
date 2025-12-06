@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->unsignedBigInteger('user_id');
             $table->string('tipe');
+            $table->string('judul');
             $table->text('pesan');
             $table->boolean('is_read')->default(false);
             $table->timestamps();
