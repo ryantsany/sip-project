@@ -38,5 +38,12 @@ class UserSeeder extends Seeder
                 'first_login' => false,
             ]);
         }
+
+        User::create([
+            'nomor_induk' => '1313600015',
+            'nama' => 'Wowo',
+            'role' => 'siswa',
+            'first_login' => true,
+        ]);
     }
 }
