@@ -8,7 +8,12 @@ Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login'])
 Route::post('/first-login', [App\Http\Controllers\Api\AuthController::class, 'firstLogin']);
 
 Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
-    Route::post('/add-user', [App\Http\Controllers\Api\AuthController::class, 'addUser']);
+    Route::post('/add-user', [App\Http\Controllers\Api\ManageUserController::class, 'addUser']);
+    Route::delete('/delete-user/{nomor_induk}', [App\Http\Controllers\Api\ManageUserController::class, 'deleteUser']);
+    Route::get('/users', [App\Http\Controllers\Api\ManageUserController::class, 'listUsers']);
+    Route::get('/search-users', [App\Http\Controllers\Api\ManageUserController::class, 'searchUsers']);
+    Route::put('/update-user/{nomor_induk}', [App\Http\Controllers\Api\ManageUserController::class, 'updateUser']);
+
     Route::post('/tambah-buku', [App\Http\Controllers\Api\BookController::class, 'addNewBook']);
     Route::post('/edit-buku/{slug}', [App\Http\Controllers\Api\BookController::class, 'editBook']);
     Route::delete('/book/{slug}', [App\Http\Controllers\Api\BookController::class, 'deleteBook']);

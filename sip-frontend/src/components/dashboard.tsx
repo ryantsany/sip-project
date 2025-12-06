@@ -16,12 +16,14 @@ import {
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar"; 
 import NotificationDropdown from "@/components/notifikasi";
-import { BookSummary, LatestBooksResponse } from "@/types/api";
+import { BookSummary, LatestBooksResponse, BooksResponse } from "@/types/api";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const [books, setBooks] = useState<BookSummary[]>([]);
+  const [searchResults, setSearchResults] = useState<BookSummary[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,7 +43,38 @@ export default function Dashboard() {
     fetchBooks();
   }, []);
 
+  // Search books
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const debounceTimer = setTimeout(async () => {
+      try {
+        setIsSearching(true);
+        const response = await http.get<BooksResponse>(
+          `/search-books?query=${encodeURIComponent(searchQuery.trim())}`
+        );
+        setSearchResults(response.data.data);
+      } catch (error) {
+        console.error("Failed to search books:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
   const categories = ["Semua", ...new Set(books.map((b) => b.kategori))];
+
+  const displayedBooks = searchQuery.trim()
+    ? searchResults
+    : selectedCategory === "Semua"
+      ? books
+      : books.filter((b) => b.kategori === selectedCategory);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -141,12 +174,12 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {isLoadingBooks ? (
+            {isLoadingBooks || isSearching ? (
               Array.from({ length: 10 }).map((_, index) => (
                 <BookCardSkeleton key={index} />
               ))
-            ) : books.length > 0 ? (
-              books.map((book) => <BookCard key={book.slug} book={book} />)
+            ) : displayedBooks.length > 0 ? (
+              displayedBooks.map((book) => <BookCard key={book.slug} book={book} />)
             ) : (
               <div className="col-span-full py-10 text-center text-gray-400">
                 Tidak ada buku ditemukan.

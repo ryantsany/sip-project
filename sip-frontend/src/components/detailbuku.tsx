@@ -81,41 +81,45 @@ export default function DetailBuku() {
         
     }, []);
 
-    const handlePinjam = () => {
+    const handlePinjam = async () => {
         const query = new URLSearchParams(window.location.search);
         const slug = query.get("buku");
-        const formattedDate: string = date ? format(date, "yyyy-MM-dd", { locale: id }) : "Belum dipilih";
 
-        setIsDialogOpen(false);
-
-        async function borrowBook() {
-            try {
-                setIsLoadingBorrow(true);
-                setFetchError(null);
-                const response = await http.post<BorrowCreateResponse>("/pinjam-buku", {
-                    book_slug: slug,
-                    borrow_date: formattedDate
-                });
-            } catch (error) {
-                console.error("Failed to fetch Books:", error);
-                setFetchError("Gagal memuat detail buku.");
-            } finally {
-                setIsLoadingBorrow(false);
-                toast.success("Berhasil Meminjam Buku!", {
-                    description: `Buku "${bookSummary?.judul}" berhasil dipinjam untuk tanggal ${format(formattedDate, "dd MMMM yyyy", { locale: id })}.`,
-                    duration: 5000, 
-                    
-                    action: {
-                        label: "Lihat",
-                        onClick: () => {
-                            window.location.href = "/riwayatpinjam";
-                        },
-                    },
-                });
-            }
+        if (!slug || !date) {
+            toast.error("Tanggal atau buku tidak valid.");
+            return;
         }
-        borrowBook();
-        
+
+        const borrowDatePayload = format(date, "yyyy-MM-dd");
+        const readableBorrowDate = format(date, "dd MMMM yyyy", { locale: id });
+
+        try {
+            setIsLoadingBorrow(true);
+            setFetchError(null);
+            await http.post<BorrowCreateResponse>("/pinjam-buku", {
+                book_slug: slug,
+                borrow_date: borrowDatePayload,
+            });
+
+            toast.success("Berhasil Meminjam Buku!", {
+                description: `Buku "${bookSummary?.judul}" berhasil dipinjam untuk tanggal ${readableBorrowDate}.`,
+                duration: 5000,
+                action: {
+                    label: "Lihat",
+                    onClick: () => {
+                        window.location.href = "/riwayatpinjam";
+                    },
+                },
+                style: {backgroundColor: "bg-blue-600", color: "white"},
+            });
+            setIsDialogOpen(false);
+        } catch (error) {
+            console.error("Failed to borrow book:", error);
+            setFetchError("Gagal meminjam buku.");
+            toast.error("Terjadi kesalahan saat meminjam buku. Coba lagi nanti.");
+        } finally {
+            setIsLoadingBorrow(false);
+        }
     };
 
     const detailTitle = bookSummary?.judul ?? (fetchError ? "Gagal memuat buku" : FALLBACK_TITLE);
@@ -175,7 +179,7 @@ export default function DetailBuku() {
                     <>
                         {/* Bagian Kiri: Cover Buku */}
                         <div className="w-full lg:w-[350px] shrink-0 flex justify-center lg:justify-start">
-                            <div className="relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+                            <div className="relative w-full aspect-2/3 rounded-2xl overflow-hidden shadow-lg border border-gray-200">
                                 <Image
                                     src={coverImage}
                                     alt={bookSummary.judul}
@@ -250,8 +254,11 @@ export default function DetailBuku() {
                             <div className="flex justify-end ">
                                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                                     <DialogTrigger asChild>
-                                        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-6 rounded-xl font-bold text-lg">
-                                            Pinjam
+                                        <Button
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-6 rounded-xl font-bold text-lg"
+                                            disabled={isLoadingBorrow}
+                                        >
+                                                Pinjam
                                         </Button>
                                     </DialogTrigger>
                                     
@@ -331,7 +338,7 @@ function BookDetailSkeleton() {
     return (
         <>
             <div className="w-full lg:w-[400px] shrink-0 flex justify-center lg:justify-start">
-                <div className="relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+                <div className="relative w-full aspect-2/3 rounded-2xl overflow-hidden shadow-lg border border-gray-200">
                     <Skeleton className="h-full w-full" />
                 </div>
             </div>

@@ -66,6 +66,7 @@ class User extends Authenticatable
             'nomor_induk' => $this->nomor_induk,
             'kelas' => $this->kelas,
             'role' => $this->role,
+            'peminjaman_aktif' => $this->borrowings()->where('status', 'dipinjam')->count(),
         ];
     }
 }
