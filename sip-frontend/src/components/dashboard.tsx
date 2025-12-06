@@ -15,6 +15,7 @@ import {
 
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar"; 
+import NotificationDropdown from "@/components/notifikasi";
 import { BookSummary, LatestBooksResponse } from "@/types/api";
 
 export default function Dashboard() {
@@ -51,12 +52,12 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
-      {/* PANGGIL SIDEBAR DISINI */}
+      
       <Sidebar />
 
       {/* --- MAIN CONTENT --- */}
       <main className="flex-1 md:ml-64 p-8 overflow-y-auto">
-        <header className="flex justify-between items-start mb-8">
+        <header className="flex justify-between items-start mb-8 relative z-50">
           <div>
             <h1 className="text-3xl font-bold text-slate-700">
               Selamat datang kembali,
@@ -69,14 +70,12 @@ export default function Dashboard() {
               </h1>
             )}
           </div>
-          <div className="cursor-pointer p-2 rounded-full transition-colors text-blue-600 hover:bg-blue-100 hover:text-black">
-            <Bell size={34} className="fill-current" />
-          </div>
+          <NotificationDropdown/>
         </header>
 
         {/* Search & Filter */}
-        <div className="relative mb-10 z-20">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+        <div className="relative mb-10 z-20 pt-6">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 pt-6 text-gray-400">
             <Search size={18} />
           </div>
           <Input
@@ -87,7 +86,7 @@ export default function Dashboard() {
           />
 
           <div
-            className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-2 rounded-full transition-colors ${isFilterOpen
+            className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-2 pt-7 rounded-full transition-colors ${isFilterOpen
               ? "bg-blue-100 text-blue-600"
               : "hover:bg-gray-100 text-gray-500"
               }`}

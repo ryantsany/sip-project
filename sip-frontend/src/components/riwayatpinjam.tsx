@@ -3,7 +3,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Bell, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import Sidebar from "@/components/sidebar"; // Import Sidebar Baru
+import Sidebar from "@/components/sidebar"; 
+import Link from "next/link";
+import NotificationDropdown from "@/components/notifikasi";
 import { http } from "@/lib/http";
 import { BorrowListResponse, BorrowRecord } from "@/types/api";
 
@@ -58,19 +60,17 @@ export default function RiwayatPinjam() {
       {/* --- MAIN CONTENT --- */}
       <main className="flex-1 md:ml-64 p-8 overflow-y-auto">
         
-        <header className="flex justify-between items-start mb-8">
+        <header className="flex justify-between items-start mb-8 relative z-50">
           <div>
-            <h1 className="text-3xl font-bold text-slate-700">Riwayat</h1>
-            <h1 className="text-3xl font-bold text-slate-700">Peminjaman</h1>
+            <h1 className="text-3xl font-bold text-slate-700">Riwayat Pinjaman</h1>
+            <p className="text-gray-500 mt-1">Lihat riwayat peminjaman bukumu</p>
           </div>
-          <div className="cursor-pointer p-2 rounded-full transition-colors text-blue-600 hover:bg-blue-100 hover:text-black">
-            <Bell size={34} className="fill-current" />
-          </div>
+          <NotificationDropdown />
         </header>
 
         {/* Search Bar */}
-        <div className="relative mb-8 z-20">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+        <div className="relative mb-8 z-20 pt-6">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 pt-6 text-gray-400">
             <Search size={18} />
           </div>
           <Input

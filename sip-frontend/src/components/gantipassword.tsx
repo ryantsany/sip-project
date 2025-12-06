@@ -6,7 +6,9 @@ import { useState } from "react";
 import { Bell, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Sidebar from "@/components/sidebar"; // Import Sidebar Baru
+import Sidebar from "@/components/sidebar"; 
+import NotificationDropdown from "@/components/notifikasi";
+import Link from "next/link";
 import { set } from "date-fns";
 import { http } from "@/lib/http";
 import { toast } from "sonner";
@@ -18,26 +20,49 @@ export default function GantiPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 1. VALIDASI KESAMAAN PASSWORD
+    if (newPassword !== confirmNewPassword) {
+        toast.error("Konfirmasi password tidak sesuai"); 
+        return; 
+    }
+
+    // 2. VALIDASI PASSWORD KOSONG (Opsional)
+    if (!newPassword) {
+        toast.error("Password baru tidak boleh kosong");
+        return;
+    }
+
     async function changePassword() {
       try {
           setIsLoading(true);
           setError(null);
-          const response =  await http.post("/change-password", {
+          
+          await http.post("/change-password", {
             current_password: oldPassword,
             new_password: newPassword,
             new_password_confirmation: confirmNewPassword
           });
-      } catch (error) {
-          console.error("Failed to fetch Books:", error);
-          setError("Gagal memuat detail buku.");
-      } finally {
-          setIsLoading(false);
+
+          // Jika sukses
           toast.success("Berhasil Mengganti Password!", {
               duration: 5000,
           });
+          
+          // Reset form
+          setOldPassword("");
+          setNewPassword("");
+          setConfirmNewPassword("");
+
+      } catch (error) {
+          console.error("Gagal ganti password:", error);
+          setError("Gagal mengganti password.");
+          toast.error("Terjadi kesalahan atau password lama salah.");
+      } finally {
+          setIsLoading(false);
       }
     }
     changePassword();
@@ -46,7 +71,6 @@ export default function GantiPassword() {
   return (
     <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
       
-      {/* PANGGIL SIDEBAR DISINI */}
       <Sidebar />
 
       {/* --- MAIN CONTENT --- */}
@@ -57,9 +81,7 @@ export default function GantiPassword() {
               Ubah Kata Sandi
             </h1>
           </div>
-          <div className="cursor-pointer p-2 rounded-full transition-colors text-blue-600 hover:bg-blue-100 hover:text-black">
-            <Bell size={34} className="fill-current" />
-          </div>
+          <NotificationDropdown />
         </header>
 
         {/* --- CARD CONTAINER UTAMA --- */}
