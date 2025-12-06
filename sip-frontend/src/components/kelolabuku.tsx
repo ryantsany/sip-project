@@ -50,7 +50,7 @@ export default function KelolaBuku() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [slug, setSlug] = useState<string | null>(null);
-        const [confirmDeleteSlug, setConfirmDeleteSlug] = useState<string | null>(null);
+    const [confirmDeleteSlug, setConfirmDeleteSlug] = useState<string | null>(null);
 
     const fetchBooks = async (page = 1, query = "") => {
         try {
@@ -206,8 +206,8 @@ export default function KelolaBuku() {
                 setCurrentPage(1);
                 await fetchBooks(1, '');
             } catch (error) {
-                const message = error instanceof Error ? error.message : 'Gagal menambahkan buku.';
-                toast.error(message);
+                setIsDialogOpen(false)
+                toast.error('Gagal menambahkan buku.');
             } finally {
                 setIsSubmitting(false);
                 setIsEditing(false);
@@ -223,8 +223,8 @@ export default function KelolaBuku() {
                 setCurrentPage(1);
                 await fetchBooks(1, '');
             } catch (error) {
-                const message = error instanceof Error ? error.message : 'Gagal menambahkan buku.';
-                toast.error(message);
+                setIsDialogOpen(false)
+                toast.error("Gagal Mengubah buku");
             } finally {
                 setIsSubmitting(false);
                 setIsEditing(false);

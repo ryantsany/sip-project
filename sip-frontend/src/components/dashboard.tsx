@@ -222,14 +222,13 @@ function BookCard({ book }: { book: BookSummary }) {
   return (
     <Link href={`/detailbuku?buku=${book.slug}`} className="block h-full">
       <div className="group relative aspect-[2/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer bg-gray-200">
-        <Image
-          src={`${ASSET_BASE}${book.cover_url}`}
-          alt={book.judul}  
-          fill
-          className="object-cover transition-transform group-hover:scale-105"
-          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-          unoptimized
-        />
+        {book.cover_url ? (
+            <Image src={`${ASSET_BASE}${book.cover_url}`} alt={book.judul} fill className="object-cover" unoptimized/>
+        ) : (
+            <span className="text-xl text-slate-400 text-center leading-tight p-1 font-medium">
+                No Image
+            </span>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
         <div className="absolute top-3 left-3">
           <span className="bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-1 rounded-full text-slate-800 uppercase tracking-wide">
