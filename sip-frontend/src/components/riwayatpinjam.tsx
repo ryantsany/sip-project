@@ -86,9 +86,11 @@ export default function RiwayatPinjam() {
   const filteredData = borrowingList.filter((item) => {
     const matchStatus =
       activeFilter === "Semua" || item.status === activeFilter;
-    const matchSearch = item.book_title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    // Search Logic (Judul ATAU Status)
+    const query = searchQuery.toLowerCase();
+    const matchSearch = 
+      item.book_title.toLowerCase().includes(query) || 
+      item.status.toLowerCase().includes(query);
 
     return matchStatus && matchSearch;
   });
@@ -122,7 +124,7 @@ export default function RiwayatPinjam() {
           </div>
           <Input
             className="w-full pl-10 pr-12 py-6 bg-white border-gray-200 rounded-xl shadow-sm focus-visible:ring-blue-500 placeholder:text-gray-400"
-            placeholder="Cari Riwayat Peminjaman..."
+            placeholder="Cari berdasarkan judul buku atau status..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
