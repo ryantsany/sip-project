@@ -14,6 +14,11 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
     Route::get('/search-users', [App\Http\Controllers\Api\ManageUserController::class, 'searchUsers']);
     Route::put('/update-user/{nomor_induk}', [App\Http\Controllers\Api\ManageUserController::class, 'updateUser']);
 
+    Route::get('/borrowings', [App\Http\Controllers\Api\ManageBorrowingController::class, 'getAllBorrowings']);
+    Route::post('/borrowings/{borrowing}/extend', [App\Http\Controllers\Api\ManageBorrowingController::class, 'extendBorrow']);
+    Route::post('/borrowings/{borrowing}/accept', [App\Http\Controllers\Api\ManageBorrowingController::class, 'adminAcceptBorrow']);
+    Route::post('/borrowings/{borrowing}/return', [App\Http\Controllers\Api\ManageBorrowingController::class, 'adminReturnBorrow']);
+
     Route::post('/tambah-buku', [App\Http\Controllers\Api\BookController::class, 'addNewBook']);
     Route::post('/edit-buku/{slug}', [App\Http\Controllers\Api\BookController::class, 'editBook']);
     Route::delete('/book/{slug}', [App\Http\Controllers\Api\BookController::class, 'deleteBook']);
@@ -36,6 +41,4 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/pinjam-buku', [App\Http\Controllers\Api\BorrowController::class, 'getUserBorrowings']);
 
     Route::get('/notifications', [App\Http\Controllers\Api\NotificationController::class, 'getUserNotifications']);
-}); 
-
-    
+});
