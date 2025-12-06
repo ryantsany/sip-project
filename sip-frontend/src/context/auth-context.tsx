@@ -45,10 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [logout]);
 
     const login = async (token: string, redirectUrl?: string) => {
-        localStorage.setItem("token", token);
-        document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Strict`;
-        await fetchProfile();
-
+        if(token != ""){
+            localStorage.setItem("token", token);
+            document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Strict`;
+            await fetchProfile();
+        }
+        
         if (redirectUrl) {
             try {
                 const url = new URL(redirectUrl);

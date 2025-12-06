@@ -40,7 +40,7 @@ export default function LoginPage() {
       if (response.data?.token) {
         await login(response.data.token, response.data?.redirect_url);
       } else {
-        throw new Error("Token tidak ditemukan dalam respon.");
+        await login("", response.data?.redirect_url);
       }
     } catch (err: unknown) {
       console.error("Login error:", err);
