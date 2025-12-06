@@ -34,6 +34,7 @@ class NotifyDueBorrowings extends Command
 
         foreach ($borrowings as $borrowing) {
             $borrowing->status = 'Tenggat';
+            $borrowing->due_date = date('Y-m-d', strtotime($today. ' + 7 days'));
             $borrowing->save();
             
             Notification::create([
