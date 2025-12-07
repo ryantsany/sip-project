@@ -18,7 +18,8 @@ class Notification extends Model
         'is_read',
     ];
 
-    protected static function boot(){
+    protected static function boot()
+    {
         parent::boot();
 
         static::creating(function ($notification) {
@@ -31,6 +32,17 @@ class Notification extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function markAsRead(): void
+    {
+        if ($this->is_read) {
+            return;
+        }
+
+        $this->update([
+            'is_read' => 1,
+        ]);
     }
 
     public function getApiResponseAttribute()

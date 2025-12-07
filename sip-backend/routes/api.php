@@ -41,4 +41,5 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/pinjam-buku', [App\Http\Controllers\Api\BorrowController::class, 'getUserBorrowings']);
 
     Route::get('/notifications', [App\Http\Controllers\Api\NotificationController::class, 'getUserNotifications']);
+    Route::post('/notifications/{notificationId}/mark-as-read', [App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
 });
