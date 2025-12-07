@@ -133,7 +133,7 @@ class BookController extends Controller
     public function getFourLatestBooks()
     {
         $books = Book::orderBy('created_at', 'desc')
-            ->take(4)
+            ->take(5)
             ->get()
             ->map(fn(Book $book) => $book->api_response);
 
