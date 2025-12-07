@@ -173,4 +173,14 @@ class BookController extends Controller
 
         return ResponseFormatter::success($books);
     }
+
+    public function getAllCategories()
+    {
+        $categories = Book::select('kategori')
+            ->distinct()
+            ->whereNotNull('kategori')
+            ->pluck('kategori');
+
+        return ResponseFormatter::success($categories);
+    }
 }

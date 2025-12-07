@@ -15,11 +15,12 @@ import {
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar"; 
 import NotificationDropdown from "@/components/notifikasi";
-import { BookSummary, LatestBooksResponse, BooksResponse } from "@/types/api";
+import { BookSummary, LatestBooksResponse, BooksResponse, CategoriesResponse } from "@/types/api";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const [books, setBooks] = useState<BookSummary[]>([]);
+  const [categories, setCategories] = useState<string[]>(["Semua"]);
   const [searchResults, setSearchResults] = useState<BookSummary[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
@@ -28,18 +29,23 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    async function fetchBooks() {
+    async function fetchData() {
       try {
         setIsLoadingBooks(true);
-        const response = await http.get<LatestBooksResponse>("/books-latest");
-        setBooks(response.data);
+        const [booksResponse, categoriesResponse] = await Promise.all([
+          http.get<LatestBooksResponse>("/books-latest"),
+          http.get<CategoriesResponse>("/categories")
+        ]);
+        
+        setBooks(booksResponse.data);
+        setCategories(["Semua", ...categoriesResponse.data]);
       } catch (error) {
-        console.error("Failed to fetch Books:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setIsLoadingBooks(false);
       }
     }
-    fetchBooks();
+    fetchData();
   }, []);
 
   // Search books
@@ -67,8 +73,6 @@ export default function Dashboard() {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  const categories = ["Semua", ...new Set(books.map((b) => b.kategori))];
-
   const displayedBooks = searchQuery.trim()
     ? searchResults
     : selectedCategory === "Semua"
@@ -77,9 +81,7 @@ export default function Dashboard() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    if (e.target.value) {
-      setSelectedCategory("Semua");
-    }
+    setSelectedCategory("Semua");
   };
 
   return (
@@ -118,7 +120,7 @@ export default function Dashboard() {
           />
 
           <div
-            className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-2 pt-7 rounded-full transition-colors ${isFilterOpen
+            className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-2 mt-3 rounded-full transition-colors ${isFilterOpen
               ? "bg-blue-100 text-blue-600"
               : "hover:bg-gray-100 text-gray-500"
               }`}
@@ -137,6 +139,11 @@ export default function Dashboard() {
                   key={category}
                   onClick={() => {
                     setSelectedCategory(category);
+                    if (category === "Semua") {
+                      setSearchQuery("");
+                    } else {
+                      setSearchQuery(category);
+                    }
                     setIsFilterOpen(false);
                   }}
                   className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${selectedCategory === category
@@ -209,7 +216,7 @@ export default function Dashboard() {
 
 function BookCardSkeleton() {
   return (
-    <div className="aspect-[2/3] rounded-2xl overflow-hidden bg-gray-200">
+    <div className="aspect-2/3 rounded-2xl overflow-hidden bg-gray-200">
       <Skeleton className="h-full w-full" />
     </div>
   );
@@ -220,7 +227,7 @@ function BookCard({ book }: { book: BookSummary }) {
   const ASSET_BASE = API_BASE?.replace(/\/api\/?$/, "");
   return (
     <Link href={`/detailbuku?buku=${book.slug}`} className="block h-full">
-      <div className="group relative aspect-[2/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer bg-gray-200">
+      <div className="group relative aspect-2/3 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer bg-gray-200">
         {book.cover_url ? (
             <Image src={`${ASSET_BASE}${book.cover_url}`} alt={book.judul} fill className="object-cover" unoptimized/>
         ) : (
@@ -228,7 +235,7 @@ function BookCard({ book }: { book: BookSummary }) {
                 No Image
             </span>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
         <div className="absolute top-3 left-3">
           <span className="bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-1 rounded-full text-slate-800 uppercase tracking-wide">
             {book.kategori}

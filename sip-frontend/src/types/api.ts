@@ -174,3 +174,5 @@ export interface AdminDashboardData {
 }
 
 export type AdminDashboardResponse = ApiResponse<AdminDashboardData>;
+
+export type CategoriesResponse = ApiResponse<string[]>;

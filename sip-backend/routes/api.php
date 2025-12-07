@@ -36,7 +36,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/search-books', [App\Http\Controllers\Api\BookController::class, 'searchBooks']);
     Route::get('/books-latest', [App\Http\Controllers\Api\BookController::class, 'getFourLatestBooks']);
     Route::get('/books-all', [App\Http\Controllers\Api\BookController::class, 'getAllBooksForUser']);
-
+    Route::get('/categories', [App\Http\Controllers\Api\BookController::class, 'getAllCategories']);
 
     Route::post('/pinjam-buku', [App\Http\Controllers\Api\BorrowController::class, 'borrowBook']);
     Route::get('/pinjam-buku', [App\Http\Controllers\Api\BorrowController::class, 'getUserBorrowings']);
