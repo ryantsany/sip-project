@@ -30,7 +30,7 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
 
   const getLinkClass = (path: string) => {
     const isActive = pathname === path || (path !== "/dashboard" && pathname.startsWith(path));
-    return `w-full justify-start gap-3 ${
+    return `w-full justify-start gap-3 hover:cursor-pointer ${
       isActive
         ? "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
         : "text-gray-500 hover:text-slate-900"
@@ -128,7 +128,7 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
 
       <div className="h-px bg-gray-100 w-full my-4" />
 
-      <Button variant="ghost" className="w-full justify-start gap-3 text-gray-500 hover:text-red-600" onClick={logout}>
+      <Button variant="ghost" className="w-full justify-start gap-3 text-gray-500 hover:text-red-600 hover:cursor-pointer" onClick={logout}>
         <LogOut size={20} />
         Keluar
       </Button>

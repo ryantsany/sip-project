@@ -74,7 +74,7 @@ export default function NotificationDropdown() {
       {/* Tombol Lonceng */}
       <button
         onClick={() => setIsNotifOpen(!isNotifOpen)}
-        className={`relative p-2 rounded-full transition-colors ${
+        className={`relative p-2 rounded-full transition-colors hover:cursor-pointer ${
           isNotifOpen
             ? "bg-blue-100 text-blue-600"
             : "text-blue-600 hover:bg-blue-100 hover:text-black"

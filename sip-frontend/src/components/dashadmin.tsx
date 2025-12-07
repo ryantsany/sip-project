@@ -83,6 +83,7 @@ export default function DashAdmin() {
                         <thead>
                             <tr className="border-b border-gray-100">
                                 <th className="p-5 text-slate-700 font-bold">Judul Buku</th>
+                                <th className="p-5 text-slate-700 font-bold text-center">Nama</th>
                                 <th className="p-5 text-slate-700 font-bold text-center">Status</th>
                             </tr>
                         </thead>
@@ -98,6 +99,9 @@ export default function DashAdmin() {
                               pendingBorrowings.map((book, idx) => (
                                 <tr key={idx} className="border-b border-gray-50 last:border-none">
                                     <td className="p-5 font-medium text-slate-700">{book.book_title}</td>
+                                    <td className="p-5 text-center text-slate-600 font-medium">
+                                        {book.peminjam}
+                                    </td>
                                     <td className="p-5 text-center">
                                         <span className="bg-[#FDF6B2] text-[#723B13] px-4 py-1 rounded-full font-bold text-xs">
                                             {book.status}
@@ -123,8 +127,8 @@ export default function DashAdmin() {
                         <thead>
                             <tr className="border-b border-gray-100">
                                 <th className="p-5 text-slate-700 font-bold">Judul Buku</th>
-                                <th className="p-5 text-slate-700 font-bold text-center">Status</th>
                                 <th className="p-5 text-slate-700 font-bold text-center">Nama</th>
+                                <th className="p-5 text-slate-700 font-bold text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
