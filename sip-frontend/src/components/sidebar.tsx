@@ -39,14 +39,16 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
 
   return (
     <aside className="hidden md:flex w-64 bg-white border-r border-gray-100 flex-col p-6 fixed h-full z-10">
-      <div className="flex items-center gap-3 mb-10">
+      <div className="flex items-center gap-3 mb-6">
         <Image src="/logo.png" alt="Logo" width={50} height={50} className="object-contain" />
         <div className="font-bold text-xl text-slate-700 leading-tight">
           Perpustakan<br />Sekolah
         </div>
       </div>
 
-      <div className="flex items-center gap-3 mb-8">
+      <div className="h-px bg-gray-100 w-full mb-6" />
+
+      <div className="flex items-center gap-3 mb-6">
         <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 border-2 overflow-hidden shrink-0">
           <User size={24} />
         </div>
@@ -65,6 +67,8 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
           )}
         </div>
       </div>
+
+      <div className="h-px bg-gray-100 w-full mb-6" />
 
       <nav className="flex-1 space-y-2">
         {/* --- MENU ADMIN --- */}
@@ -122,7 +126,9 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
         )}
       </nav>
 
-      <Button variant="ghost" className="w-full justify-start gap-3 text-gray-500 hover:text-red-600 mt-auto" onClick={logout}>
+      <div className="h-px bg-gray-100 w-full my-4" />
+
+      <Button variant="ghost" className="w-full justify-start gap-3 text-gray-500 hover:text-red-600" onClick={logout}>
         <LogOut size={20} />
         Keluar
       </Button>
