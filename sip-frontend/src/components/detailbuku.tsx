@@ -197,8 +197,13 @@ export default function DetailBuku() {
                                 <h2 className="text-2xl md:text-3xl font-bold text-slate-800 leading-tight">
                                     {bookSummary.judul}
                                 </h2>
-                                {statusLabel && (
+                                {statusLabel == "available" && (
                                     <span className="bg-green-100 text-green-600 px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap">
+                                        {statusLabel}
+                                    </span>
+                                )} 
+                                {statusLabel == "unavailable" && (
+                                    <span className="bg-red-100 text-red-600 px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap">
                                         {statusLabel}
                                     </span>
                                 )}
