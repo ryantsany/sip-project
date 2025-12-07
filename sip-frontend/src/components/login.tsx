@@ -155,6 +155,10 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        <span className="block text-center text-sm text-gray-500 mt-6">
+          &copy; {new Date().getFullYear()} SIM | Kelompok 9
+        </span>
       </div>
     </div>
   );
