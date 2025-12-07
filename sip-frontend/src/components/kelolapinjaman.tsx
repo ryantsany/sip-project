@@ -170,6 +170,7 @@ export default function KelolaPinjaman() {
             setIsDialogOpen(false);
             fetchBorrowings();
         } catch (error) {
+            console.error(error);
             toast.error("Gagal memperpanjang tenggat", {
                 description: "Sudah pernah memperpanjang atau terjadi kesalahan.",
                 className: "!bg-white !text-slate-900 !border-slate-200",

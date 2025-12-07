@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { X, Loader2, Search, } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar"; 
-import Link from "next/link";
 import NotificationDropdown from "@/components/notifikasi";
 import { http } from "@/lib/http";
 import { BorrowListResponse, BorrowRecord } from "@/types/api";
 import { toast } from "sonner";
-import { Toaster } from "@/components/ui/sonner";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +47,7 @@ export default function RiwayatPinjam() {
         });
 
     } catch (error) {
+        console.error(error);
         toast.error("Gagal memperpanjang peminjaman.");
     } finally {
         setIsExtendDialogOpen(false);

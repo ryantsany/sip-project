@@ -3,13 +3,11 @@
 import React from "react";
 import Image from "next/image";
 import { useState } from "react";
-import { Bell, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar"; 
 import NotificationDropdown from "@/components/notifikasi";
-import Link from "next/link";
-import { set } from "date-fns";
 import { http } from "@/lib/http";
 import { toast } from "sonner";
 
@@ -18,8 +16,6 @@ export default function GantiPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +35,6 @@ export default function GantiPassword() {
     async function changePassword() {
       try {
           setIsLoading(true);
-          setError(null);
           
           await http.post("/change-password", {
             current_password: oldPassword,
@@ -57,9 +52,8 @@ export default function GantiPassword() {
           setNewPassword("");
           setConfirmNewPassword("");
 
-      } catch (error) {
-          console.error("Gagal ganti password:", error);
-          setError("Gagal mengganti password.");
+      } catch (error) {;
+          console.error(error);
           toast.error("Terjadi kesalahan atau password lama salah.");
       } finally {
           setIsLoading(false);

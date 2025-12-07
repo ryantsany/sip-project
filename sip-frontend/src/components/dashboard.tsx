@@ -7,7 +7,6 @@ import { http } from "@/lib/http";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/auth-context";
 import {
-  Bell,
   Search,
   SlidersHorizontal,
   ChevronRight,

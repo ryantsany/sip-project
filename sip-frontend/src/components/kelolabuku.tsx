@@ -207,6 +207,7 @@ export default function KelolaBuku() {
                 await fetchBooks(1, '');
             } catch (error) {
                 setIsDialogOpen(false)
+                console.error(error);
                 toast.error('Gagal menambahkan buku.');
             } finally {
                 setIsSubmitting(false);
@@ -224,6 +225,7 @@ export default function KelolaBuku() {
                 await fetchBooks(1, '');
             } catch (error) {
                 setIsDialogOpen(false)
+                console.error(error);
                 toast.error("Gagal Mengubah buku");
             } finally {
                 setIsSubmitting(false);
