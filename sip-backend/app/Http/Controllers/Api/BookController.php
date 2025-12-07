@@ -130,6 +130,15 @@ class BookController extends Controller
         return ResponseFormatter::success($books);
     }
 
+    public function getAllBooksForUser()
+    {
+        $books = Book::orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn(Book $book) => $book->api_response);
+
+        return ResponseFormatter::success($books);
+    }
+
     public function getFourLatestBooks()
     {
         $books = Book::orderBy('created_at', 'desc')

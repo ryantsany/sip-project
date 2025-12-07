@@ -239,6 +239,7 @@ class BookSeeder extends Seeder
             ],
             [
                 'judul' => 'Seri Komik Sains: Mengenal Antariksa',
+                'cover_url' => '/storage/covers/seri-komik-sains-mengenal-antariksa.jpg',
                 'pengarang' => 'Lee Yong Hwan',
                 'penerbit' => 'Bhuana Ilmu Populer',
                 'tahun' => 2021,
@@ -251,6 +252,7 @@ class BookSeeder extends Seeder
             ],
             [
                 'judul' => 'Negeri 5 Menara',
+                'cover_url' => '/storage/covers/negeri-5-menara.jpg',
                 'pengarang' => 'Ahmad Fuadi',
                 'penerbit' => 'Gramedia Pustaka Utama',
                 'tahun' => 2009,
