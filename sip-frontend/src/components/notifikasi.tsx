@@ -24,7 +24,6 @@ export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [markingId, setMarkingId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -67,27 +66,6 @@ export default function NotificationDropdown() {
     } catch (error) {
       console.warn("Invalid date format", error);
       return timestamp;
-    }
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    const target = notifications.find((notif) => notif.id === notificationId);
-    if (!target || target.is_read === 1 || markingId === notificationId) {
-      return;
-    }
-
-    setMarkingId(notificationId);
-    try {
-      await http.post(`/notifications/${notificationId}/mark-as-read`, {});
-      setNotifications((prev) =>
-        prev.map((notif) =>
-          notif.id === notificationId ? { ...notif, is_read: 1 } : notif
-        )
-      );
-    } catch (err) {
-      console.error("Gagal menandai notifikasi sebagai dibaca:", err);
-    } finally {
-      setMarkingId((current) => (current === notificationId ? null : current));
     }
   };
 
@@ -147,14 +125,14 @@ export default function NotificationDropdown() {
 
             {!isLoading && !error &&
               notifications.map((notif) => (
-                <button
+                <Link
                   key={notif.id}
-                  onClick={() => markAsRead(notif.id)}
+                  href={`/notifikasi/${notif.id}`}
+                  onClick={() => setIsNotifOpen(false)}
                   className={`flex w-full gap-3 px-5 py-4 border-b border-gray-50 text-left transition-colors group ${
                     notif.is_read === 0 ? "bg-blue-50/40 hover:bg-blue-50" : "hover:bg-gray-50"
-                  } ${markingId === notif.id ? "opacity-70" : ""}`}
+                  }`}
                   aria-label={`Buka notifikasi ${notif.judul}`}
-                  disabled={markingId === notif.id}
                 >
                   <div className="shrink-0 mt-1">
                     {notif.tipe === "important" ? (
@@ -177,7 +155,7 @@ export default function NotificationDropdown() {
                       {formatDate(notif.created_at)}
                     </p>
                   </div>
-                </button>
+                </Link>
               ))}
           </div>
 

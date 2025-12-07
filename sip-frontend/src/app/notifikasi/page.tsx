@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import Sidebar from "@/components/sidebar";
 import NotificationDropdown from "@/components/notifikasi";
 import { AlertCircle, Info, CheckCheck } from "lucide-react";
@@ -181,7 +182,8 @@ export default function NotifikasiPage() {
             
             {!isLoading && !error &&
               displayedNotifications.map((notif) => (
-              <div 
+              <Link 
+                href={`/notifikasi/${notif.id}`}
                 key={notif.id}
                 className="flex items-start gap-4 p-5 rounded-xl border border-gray-200 bg-white hover:bg-slate-50 transition-colors"
               >
@@ -214,7 +216,7 @@ export default function NotifikasiPage() {
                     {formatDate(notif.created_at)}
                   </p>
                 </div>
-              </div>
+              </Link>
             ))}
 
             {/* Empty State */}

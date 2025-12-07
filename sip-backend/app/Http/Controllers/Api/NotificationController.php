@@ -35,4 +35,14 @@ class NotificationController extends Controller
 
         return ResponseFormatter::success($notifications);
     }
+
+    public function getNotificationDetails(Request $request, $notificationId){
+        $notification = $request->user()->notifications()->where('id', $notificationId)->first();
+
+        if(!$notification){
+            return ResponseFormatter::error(404, null, 'Notifikasi tidak ditemukan.');
+        }
+
+        return ResponseFormatter::success($notification->api_response);
+    }   
 }
