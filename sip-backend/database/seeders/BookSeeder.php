@@ -239,7 +239,7 @@ class BookSeeder extends Seeder
             ],
             [
                 'judul' => 'Seri Komik Sains: Mengenal Antariksa',
-                'cover_url' => '/storage/covers/seri-komik-sains-mengenal-antariksa.jpg',
+                'cover_url' => '/storage/covers/seri-komik-sains-mengenal-antariksa.png',
                 'pengarang' => 'Lee Yong Hwan',
                 'penerbit' => 'Bhuana Ilmu Populer',
                 'tahun' => 2021,
