@@ -77,6 +77,7 @@ export interface Paginated<T> {
 
 export type BooksResponse = ApiResponse<Paginated<BookSummary>>;
 export type LatestBooksResponse = ApiResponse<BookSummary[]>;
+export type AllBooksResponse = ApiResponse<Paginated<BookSummary>>;
 export type BookSummaryResponse = ApiResponse<BookSummary>;
 export type AddBookResponse = ApiResponse<{ book: CreatedBook }>;
 
