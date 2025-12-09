@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "@/components/sidebar";
-import { ArrowLeft, Calendar, Info, AlertCircle, CheckCheck } from "lucide-react";
+import { ArrowLeft, Calendar, Info, AlertCircle, CheckCheck, Loader2 } from "lucide-react";
 import { http } from "@/lib/http";
 
 type NotificationDetail = {
@@ -84,7 +84,11 @@ export default function NotificationDetailPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 min-h-content">
-            {isLoading && <div className="text-gray-500">Memuat detail...</div>}
+            {isLoading && (
+                <div className="flex justify-center items-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            )}
             
             {!isLoading && error && (
                 <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600">

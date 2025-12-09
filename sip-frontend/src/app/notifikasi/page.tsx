@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/sidebar";
 import NotificationDropdown from "@/components/notifikasi";
-import { AlertCircle, Info, CheckCheck } from "lucide-react";
+import { AlertCircle, Info, CheckCheck, Loader2 } from "lucide-react";
 
 import { http } from "@/lib/http";
 
@@ -171,7 +171,9 @@ export default function NotifikasiPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 min-h-[600px] p-6">
           <div className="flex flex-col gap-4">
             {isLoading && (
-              <div className="text-sm text-gray-500">Memuat notifikasi...</div>
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
             )}
 
             {!isLoading && error && (

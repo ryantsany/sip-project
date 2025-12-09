@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, X, AlertCircle, Info } from "lucide-react";
+import { Bell, X, AlertCircle, Info, Loader2 } from "lucide-react";
 
 import { http } from "@/lib/http";
 
@@ -106,8 +106,8 @@ export default function NotificationDropdown() {
           {/* List Notifikasi */}
           <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
             {isLoading && (
-              <div className="px-5 py-6 text-sm text-gray-500">
-                Memuat notifikasi...
+              <div className="flex justify-center items-center px-5 py-6 text-sm text-gray-500">
+                <Loader2 className="h-6 w-6 animate-spin" />
               </div>
             )}
 
