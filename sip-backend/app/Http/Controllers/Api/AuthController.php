@@ -131,7 +131,7 @@ class AuthController extends Controller
 
         if(!Hash::check($request->current_password, $user->password)){
             return ResponseFormatter::error(400, null, [
-                'Password saat ini tidak valid'
+                'Kata sandi lama salah'
             ]);
         }
 
@@ -139,7 +139,7 @@ class AuthController extends Controller
         $user->save();
 
         return ResponseFormatter::success(null, [
-            'Password berhasil diubah'
+            'Kata sandi berhasil diubah'
         ]);
     }
 }

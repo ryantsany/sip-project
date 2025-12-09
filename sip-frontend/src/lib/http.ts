@@ -25,7 +25,34 @@ async function request<T>(endpoint: string, options: HttpOptions = {}): Promise<
 
     if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
-        throw new Error(errorBody.message || `HTTP error! status: ${response.status}`);
+        
+        let errorMessage = errorBody.message || `HTTP error! status: ${response.status}`;
+        
+        // Handle Laravel ResponseFormatter format
+        if (errorBody?.meta) {
+            const { messages, validations } = errorBody.meta;
+            let customMessage = '';
+
+            if (Array.isArray(messages) && messages.length > 0) {
+                customMessage = messages.join(', ');
+            } else if (typeof messages === 'string' && messages) {
+                customMessage = messages;
+            }
+
+            if (validations) {
+                // Handle Laravel validation errors object { field: ["error1", "error2"] }
+                const validationErrors = Object.values(validations).flat().join(', ');
+                if (validationErrors) {
+                    customMessage = customMessage ? `${customMessage}: ${validationErrors}` : validationErrors;
+                }
+            }
+            
+            if (customMessage) {
+                errorMessage = customMessage;
+            }
+        }
+
+        throw new Error(errorMessage);
     }
 
     // Handle 204 No Content

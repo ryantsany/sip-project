@@ -43,7 +43,7 @@ export default function GantiPassword() {
           });
 
           // Jika sukses
-          toast.success("Berhasil Mengganti Password!", {
+          toast.success("Berhasil Mengganti Kata Sandi!", {
               duration: 5000,
           });
           
@@ -54,7 +54,11 @@ export default function GantiPassword() {
 
       } catch (error) {;
           console.error(error);
-          toast.error("Terjadi kesalahan atau password lama salah.");
+          let message = "Terjadi kesalahan atau password lama salah.";
+          if (error instanceof Error) {
+              message = error.message;
+          }
+          toast.error(message);
       } finally {
           setIsLoading(false);
       }
