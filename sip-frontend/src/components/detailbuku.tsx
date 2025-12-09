@@ -71,8 +71,11 @@ export default function DetailBuku() {
                 const response = await http.get<BookSummaryResponse>("/books/" + slug);
                 setBookSummary(response.data);
             } catch (error) {
-                console.error("Failed to fetch Books:", error);
-                setFetchError("Gagal memuat detail buku.");
+                let message = "Gagal memuat detail buku.";
+                if (error instanceof Error) {
+                    message = error.message;
+                }
+                setFetchError(message);
             } finally {
                 setIsLoadingBook(false);
             }
