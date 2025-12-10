@@ -199,7 +199,7 @@ export default function DashAdmin() {
                               ))
                             ) : (
                               <tr>
-                                <td colSpan={3} className="p-5 text-center text-slate-500">Tidak ada buku terlambat.</td>
+                                <td colSpan={4} className="p-5 text-center text-slate-500">Tidak ada buku terlambat.</td>
                               </tr>
                             )}
                         </tbody>

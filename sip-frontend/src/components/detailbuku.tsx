@@ -37,11 +37,13 @@ import {
 } from "@/components/ui/popover";
 import { BookSummary, BookSummaryResponse, BorrowCreateResponse } from "@/types/api";
 import { toast } from "sonner";
+import { useAuth } from "@/context/auth-context";
 
 const FALLBACK_COVER = "/bluebox17.jpeg";
 const FALLBACK_TITLE = "Detail Buku";
 
 export default function DetailBuku() {
+    const {user, loading} = useAuth();
     // STATE FOR DATE PICKER (Default to today)
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [bookSummary, setBookSummary] = useState<BookSummary | null>(null);
@@ -142,9 +144,8 @@ export default function DetailBuku() {
             <header className="flex justify-between items-start mb-8">
             <div>
                 <h1 className="text-3xl font-bold text-slate-700">
-                Selamat datang kembali,
+                {bookSummary?.judul}
                 </h1>
-                <h1 className="text-3xl font-bold text-slate-700">Heru!</h1>
             </div>
             <div className="cursor-pointer p-2 rounded-full transition-colors text-blue-600 hover:bg-blue-100 hover:text-black">
                 <Bell size={34} className="fill-current" />

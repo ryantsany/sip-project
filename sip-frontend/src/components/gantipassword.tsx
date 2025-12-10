@@ -128,7 +128,7 @@ export default function GantiPassword() {
                         <Button 
                             type="submit"
                             onClick={handleSubmit}
-                            className=" bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 h-12 rounded-xl shadow-sm hover:shadow-md transition-all text-sm tracking-wide"
+                            className=" bg-blue-600 hover:bg-blue-700 cursor-pointer text-white font-bold px-10 h-12 rounded-xl shadow-sm hover:shadow-md transition-all text-sm tracking-wide"
                             disabled={isLoading}
                         >
                           {isLoading ? <><Loader2 /> Menyimpan...</> : "Simpan"}

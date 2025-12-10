@@ -221,7 +221,7 @@ export default function KelolaKategori() {
                     </div>
                     <Button
                         onClick={handleOpenAddDialog}
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 h-11 rounded-xl flex items-center gap-2"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 h-11 rounded-xl flex items-center gap-2"
                     >
                         <Plus size={20} />
                         Tambah Kategori
@@ -416,14 +416,14 @@ export default function KelolaKategori() {
                                 <Button
                                     onClick={() => setIsDialogOpen(false)}
                                     variant="outline"
-                                    className="h-10 rounded-xl px-6 font-bold border-gray-300 text-slate-600 hover:bg-gray-50"
+                                    className="h-10 rounded-xl px-6 font-bold border-gray-300 text-slate-600 hover:bg-gray-50 cursor-pointer"
                                 >
                                     Batal
                                 </Button>
                                 <Button
                                     onClick={handleSubmit}
                                     disabled={isSubmitting}
-                                    className="h-10 rounded-xl px-6 font-bold bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-60"
+                                    className="h-10 rounded-xl px-6 font-bold bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-60 cursor-pointer"
                                 >
                                     {isSubmitting ? (
                                         <Loader2 className="h-4 w-4 animate-spin mr-2" />

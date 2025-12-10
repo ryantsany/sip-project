@@ -258,7 +258,7 @@ export default function KelolaUser() {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-6 rounded-xl flex items-center gap-2 whitespace-nowrap shadow-sm"
+                className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-white font-bold px-6 py-6 rounded-xl flex items-center gap-2 whitespace-nowrap shadow-sm"
                 onClick={() => {
                   resetForm();
                   setIsDialogOpen(true);
