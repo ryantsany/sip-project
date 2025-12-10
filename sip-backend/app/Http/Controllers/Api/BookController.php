@@ -132,12 +132,36 @@ class BookController extends Controller
         return ResponseFormatter::success($books);
     }
 
-    public function getAllBooksForUser()
+    public function getAllBooksForUser(Request $request)
     {
-        $books = Book::with('category')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(fn(Book $book) => $book->api_response);
+        $query = Book::with('category');
+
+        // Filter by category if provided
+        if ($request->has('category') && $request->category !== '') {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('name', $request->category);
+            });
+        }
+
+        // Apply sorting
+        $sortBy = $request->input('sort', 'newest');
+        switch ($sortBy) {
+            case 'title':
+                $query->orderBy('judul', 'asc');
+                break;
+            case 'author':
+                $query->orderBy('pengarang', 'asc');
+                break;
+            case 'year':
+                $query->orderBy('tahun', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $books = $query->get()->map(fn(Book $book) => $book->api_response);
 
         return ResponseFormatter::success($books);
     }
@@ -166,19 +190,39 @@ class BookController extends Controller
 
     public function searchBooks(Request $request)
     {
-        $query = $request->input('query');
+        $searchQuery = $request->input('query');
 
-        $books = Book::with('category')
-            ->where('judul', 'like', '%' . $query . '%')
-            ->orWhereHas('category', function ($q) use ($query) {
-                $q->where('name', 'like', '%' . $query . '%');
-            })
-            ->orWhere('isbn', 'like', '%' . $query . '%')
-            ->orderBy('created_at', 'desc')
+        $query = Book::with('category')
+            ->where(function ($q) use ($searchQuery) {
+                $q->where('judul', 'like', '%' . $searchQuery . '%')
+                    ->orWhereHas('category', function ($catQ) use ($searchQuery) {
+                        $catQ->where('name', 'like', '%' . $searchQuery . '%');
+                    })
+                    ->orWhere('isbn', 'like', '%' . $searchQuery . '%');
+            });
+
+        // Apply sorting
+        $sortBy = $request->input('sort', 'newest');
+        switch ($sortBy) {
+            case 'title':
+                $query->orderBy('judul', 'asc');
+                break;
+            case 'author':
+                $query->orderBy('pengarang', 'asc');
+                break;
+            case 'year':
+                $query->orderBy('tahun', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $books = $query
             ->paginate(10)
             ->through(fn(Book $book) => $book->api_response);
 
         return ResponseFormatter::success($books);
     }
 }
-
