@@ -196,6 +196,7 @@ export default function KelolaUser() {
     }
 
     const payload = {
+      nomor_induk: formData.nomorInduk.trim(),
       nama: formData.nama.trim(),
       kelas: formData.kelas.trim() || null,
       role: formData.role,

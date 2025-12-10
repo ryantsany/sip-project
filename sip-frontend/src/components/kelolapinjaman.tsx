@@ -389,7 +389,13 @@ export default function KelolaPinjaman() {
                                         <td className="p-6 text-slate-700 text-center">{formatDateDisplay(loan.borrow_date)}</td>
                                     )}
 
-                                    <td className="p-6 text-slate-700 text-center">{formatDateDisplay(loan.due_date)}</td>
+                                    {activeTab === "dikembalikan" && (
+                                        <td className="p-6 text-slate-700 text-center">{formatDateDisplay(loan.return_date)}</td>
+                                    )}
+
+                                    {activeTab !== "dikembalikan" && (
+                                        <td className="p-6 text-slate-700 text-center">{formatDateDisplay(loan.due_date)}</td>
+                                    )}
 
                                     <td className="p-6 text-center">
                                         <span

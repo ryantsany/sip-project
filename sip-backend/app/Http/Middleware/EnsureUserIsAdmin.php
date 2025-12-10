@@ -15,7 +15,7 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user()?->role !== 'admin') {
+        if ($request->user()?->role !== 'admin' && $request->user()?->role !== 'petugas') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 

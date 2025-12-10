@@ -8,13 +8,15 @@ export function AdminAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "admin")){
-        router.replace("/dashboard");
-    }
-  }, [loading, user, router]);
+  const isAuthorized = user?.role === "admin" || user?.role === "petugas";
 
-  if (loading || !user || user.role !== "admin"){
+  useEffect(() => {
+    if (!loading && (!user || !isAuthorized)) {
+      router.replace("/dashboard");
+    }
+  }, [loading, user, isAuthorized, router]);
+
+  if (loading || !user || !isAuthorized) {
     return null;
   }
 

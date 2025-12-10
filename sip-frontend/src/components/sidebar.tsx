@@ -114,6 +114,30 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
           </>
         )}
 
+        {/* MENU PETUGAS */}
+        {user?.role === "petugas" && (
+          <>
+            <Link href="/admin/dashboard" className="block">
+              <Button variant="ghost" className={getLinkClass("/admin/dashboard")}>
+                <LayoutDashboard size={20} />
+                Dashboard
+              </Button>
+            </Link>
+            <Link href="/admin/kelolapinjaman" className="block">
+              <Button variant="ghost" className={getLinkClass("/admin/kelolapinjaman")}>
+                <Search size={20} />
+                Kelola Pinjaman
+              </Button>
+            </Link>
+            <Link href="/gantipassword" className="block">
+              <Button variant="ghost" className={getLinkClass("/gantipassword")}>
+                <Lock size={20} />
+                Ubah Kata Sandi
+              </Button>
+            </Link>
+          </>
+        )}
+
         {/* --- MENU SISWA --- */}
         {user?.role === "siswa" && (
           <>
