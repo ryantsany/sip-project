@@ -19,6 +19,10 @@ import { BookSummary, LatestBooksResponse, BooksResponse, CategoriesResponse, Al
 
 type SortOption = "newest" | "title" | "author" | "year";
 
+interface FilteredBooksResponse {
+  data: BookSummary[];
+}
+
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const [books, setBooks] = useState<BookSummary[]>([]);
@@ -34,7 +38,11 @@ export default function Dashboard() {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
-  // All Books lazy loading states
+  // Filtered books from API (when category or sort is applied)
+  const [filteredBooks, setFilteredBooks] = useState<BookSummary[]>([]);
+  const [isLoadingFiltered, setIsLoadingFiltered] = useState(false);
+
+  // All Books lazy loading states (only used for default view)
   const [allBooks, setAllBooks] = useState<BookSummary[]>([]);
   const [allBooksPage, setAllBooksPage] = useState(1);
   const [hasMoreBooks, setHasMoreBooks] = useState(true);
@@ -62,7 +70,39 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // Fetch all books with pagination
+  // Fetch filtered/sorted books from API when category or sort changes
+  useEffect(() => {
+    // Only fetch if there's a filter or non-default sort and not searching
+    if (searchQuery.trim()) return;
+    if (selectedCategory === null && sortBy === "newest") {
+      setFilteredBooks([]);
+      return;
+    }
+
+    const fetchFilteredBooks = async () => {
+      try {
+        setIsLoadingFiltered(true);
+        const params = new URLSearchParams();
+        if (selectedCategory) {
+          params.append("category", selectedCategory);
+        }
+        if (sortBy !== "newest") {
+          params.append("sort", sortBy);
+        }
+        const response = await http.get<FilteredBooksResponse>(`/books-all?${params.toString()}`);
+        setFilteredBooks(response.data);
+      } catch (error) {
+        console.error("Failed to fetch filtered books:", error);
+        setFilteredBooks([]);
+      } finally {
+        setIsLoadingFiltered(false);
+      }
+    };
+
+    fetchFilteredBooks();
+  }, [selectedCategory, sortBy, searchQuery]);
+
+  // Fetch all books with pagination (only for default view)
   const fetchAllBooks = useCallback(async (page: number, reset: boolean = false) => {
     if (isLoadingMore && !reset) return;
 
@@ -91,7 +131,7 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Intersection Observer for infinite scroll
+  // Intersection Observer for infinite scroll (only for default view)
   useEffect(() => {
     if (observerRef.current) {
       observerRef.current.disconnect();
@@ -99,7 +139,7 @@ export default function Dashboard() {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMoreBooks && !isLoadingMore && selectedCategory === null && searchQuery === "") {
+        if (entries[0].isIntersecting && hasMoreBooks && !isLoadingMore && selectedCategory === null && sortBy === "newest" && searchQuery === "") {
           fetchAllBooks(allBooksPage + 1);
         }
       },
@@ -115,7 +155,7 @@ export default function Dashboard() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMoreBooks, isLoadingMore, allBooksPage, fetchAllBooks, selectedCategory, searchQuery]);
+  }, [hasMoreBooks, isLoadingMore, allBooksPage, fetchAllBooks, selectedCategory, sortBy, searchQuery]);
 
   // Search books
   useEffect(() => {
@@ -127,8 +167,13 @@ export default function Dashboard() {
     const debounceTimer = setTimeout(async () => {
       try {
         setIsSearching(true);
+        const params = new URLSearchParams();
+        params.append("query", searchQuery.trim());
+        if (sortBy !== "newest") {
+          params.append("sort", sortBy);
+        }
         const response = await http.get<BooksResponse>(
-          `/search-books?query=${encodeURIComponent(searchQuery.trim())}`
+          `/search-books?${params.toString()}`
         );
         setSearchResults(response.data.data);
       } catch (error) {
@@ -140,7 +185,7 @@ export default function Dashboard() {
     }, 400);
 
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery]);
+  }, [searchQuery, sortBy]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -149,30 +194,19 @@ export default function Dashboard() {
 
   // Logic to filter and sort books
   const displayedBooks = useMemo(() => {
-    let result = searchQuery.trim()
-      ? searchResults
-      : selectedCategory === null
-        ? [...books]
-        : books.filter((b) => b.category?.name === selectedCategory);
-
-    // Apply Sorting
-    switch (sortBy) {
-      case "title":
-        result.sort((a, b) => a.judul.localeCompare(b.judul));
-        break;
-      case "author":
-        result.sort((a, b) => (a.penulis ?? "").localeCompare(b.penulis ?? ""));
-        break;
-      case "year":
-        result.sort((a, b) => Number(b.tahun) - Number(a.tahun));
-        break;
-      case "newest":
-      default:
-        break;
+    // If searching, use search results (already sorted by backend)
+    if (searchQuery.trim()) {
+      return searchResults;
     }
 
-    return result;
-  }, [books, searchResults, searchQuery, selectedCategory, sortBy]);
+    // If filtering by category or sorting, use API-fetched filteredBooks
+    if (selectedCategory !== null || sortBy !== "newest") {
+      return filteredBooks;
+    }
+
+    // Default: show latest books (no filter, default sort)
+    return [...books];
+  }, [books, filteredBooks, searchResults, searchQuery, selectedCategory, sortBy]);
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: "newest", label: "Terbaru" },
@@ -336,19 +370,23 @@ export default function Dashboard() {
               <h2 className="text-xl font-bold text-slate-600">
                 Hasil pencarian: &quot;{searchQuery}&quot;
               </h2>
-            ) : selectedCategory === null ? (
-              <h2 className="text-xl font-bold text-slate-600 group-hover:text-blue-600 transition-colors">
-                Baru ditambahkan
-              </h2>
-            ) : (
+            ) : selectedCategory !== null ? (
               <h2 className="text-xl font-bold text-slate-600">
                 Kategori: {selectedCategory}
+              </h2>
+            ) : sortBy !== "newest" ? (
+              <h2 className="text-xl font-bold text-slate-600">
+                Semua buku ({sortOptions.find((o) => o.value === sortBy)?.label})
+              </h2>
+            ) : (
+              <h2 className="text-xl font-bold text-slate-600 group-hover:text-blue-600 transition-colors">
+                Baru ditambahkan
               </h2>
             )}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {isLoadingBooks || isSearching ? (
+            {isLoadingBooks || isSearching || isLoadingFiltered ? (
               Array.from({ length: 10 }).map((_, index) => (
                 <BookCardSkeleton key={`latest-skeleton-${index}`} />
               ))
@@ -363,7 +401,7 @@ export default function Dashboard() {
         </section>
 
         {/* --- ALL BOOKS WITH LAZY LOADING --- */}
-        {selectedCategory === null && searchQuery === "" && (
+        {selectedCategory === null && searchQuery === "" && sortBy === "newest" && (
           <section>
             <h2 className="text-xl font-bold text-slate-600 mb-4">Semua buku</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
