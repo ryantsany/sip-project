@@ -8,6 +8,47 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AdminDashboardData, AdminDashboardResponse } from "@/types/api";
 import StatCard from "./stat-card";
 import { Banana, ClockAlert, Library } from "lucide-react";
+import { TrendingUp, Trophy } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+
+// --- CHART ---
+const chartData = [
+  { month: "Januari", desktop: 186 },
+  { month: "Februari", desktop: 305 },
+  { month: "Maret", desktop: 237 },
+  { month: "April", desktop: 73 },
+  { month: "Mei", desktop: 209 },
+  { month: "Juni", desktop: 214 },
+];
+
+const chartConfig = {
+  desktop: {
+    label: "Peminjaman",
+    color: "#3B82F6",
+  },
+} satisfies ChartConfig;
+
+// DATA DUMMY TOP BUKU 
+const topBooks = [
+  { id: 1, title: "Laskar Pelangi", author: "Andrea Hirata", count: 42 },
+  { id: 2, title: "Bumi Manusia", author: "Pramoedya A. T.", count: 38 },
+  { id: 3, title: "Atomic Habits", author: "James Clear", count: 35 },
+  { id: 4, title: "Filosofi Teras", author: "Henry Manampiring", count: 29 },
+  { id: 5, title: "Laut Bercerita", author: "Leila S. Chudori", count: 24 },
+];
 
 export default function DashAdmin() {
   const { user, loading } = useAuth();
@@ -107,6 +148,82 @@ export default function DashAdmin() {
           }
         </section>
 
+        {/* --- BAGIAN CHART --- */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            
+            {/* KOLOM KIRI: CHART */}
+            <div className="lg:col-span-2">
+                <Card className="rounded-2xl shadow-sm border border-gray-100 h-full">
+                    <CardHeader>
+                        <CardTitle className="text-xl font-bold text-slate-700">Statistik Peminjaman</CardTitle>
+                        <CardDescription>Grafik jumlah peminjaman buku 6 bulan terakhir</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pl-0">
+                        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                            <BarChart
+                                accessibilityLayer
+                                data={chartData}
+                                margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
+                            >
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="month"
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    axisLine={false}
+                                    tickFormatter={(value) => value.slice(0, 3)}
+                                />
+                                <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                <Bar dataKey="desktop" fill="var(--color-desktop)" radius={8} barSize={40}>
+                                    <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
+                                </Bar>
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* KOLOM KANAN: TOP 5 BUKU */}
+            <div className="lg:col-span-1">
+                <Card className="rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col">
+                    <CardHeader className="pb-4">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-xl font-bold text-slate-700">Buku Terpopuler</CardTitle>
+                            <Trophy className="text-yellow-500" size={20} />
+                        </div>
+                        <CardDescription>5 buku paling sering dipinjam bulan ini</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                        <div className="space-y-4">
+                            {topBooks.map((book, index) => (
+                                <div key={book.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className={`
+                                            flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm shrink-0
+                                            ${index === 0 ? "bg-yellow-100 text-yellow-700" : 
+                                              index === 1 ? "bg-gray-200 text-slate-700" :
+                                              index === 2 ? "bg-orange-100 text-orange-800" : "bg-white border text-slate-500"}
+                                        `}>
+                                            {index + 1}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-slate-700 text-sm truncate">{book.title}</p>
+                                            <p className="text-xs text-slate-500 truncate">{book.author}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-md shrink-0">
+                                        <TrendingUp size={12} />
+                                        <span className="text-xs font-bold">{book.count}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>    
+        </section>
+        {/* --- END BAGIAN CHART --- */}
+
         {/* Tables */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Tabel Kiri */}
@@ -147,7 +264,7 @@ export default function DashAdmin() {
                               ))
                             ) : (
                               <tr>
-                                <td colSpan={3} className="p-5 text-center text-slate-500">Tidak ada data pending.</td>
+                                <td colSpan={2} className="p-5 text-center text-slate-500">Tidak ada data pending.</td>
                               </tr>
                             )}
                         </tbody>
@@ -194,7 +311,7 @@ export default function DashAdmin() {
                                     </td>   
                                     <td className="p-5 text-center text-slate-700">
                                         Rp {book.denda?.toLocaleString('id-ID')}
-                                    </td>                         
+                                    </td>                             
                                 </tr>
                               ))
                             ) : (
