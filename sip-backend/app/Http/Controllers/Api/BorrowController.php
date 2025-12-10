@@ -10,7 +10,8 @@ use Illuminate\Http\Request;
 
 class BorrowController extends Controller
 {
-    public function borrowBook(Request $request){
+    public function borrowBook(Request $request)
+    {
         $validated = $request->validate([
             'book_slug' => 'required|string|exists:books,slug',
             'borrow_date' => 'required|date',
@@ -22,30 +23,71 @@ class BorrowController extends Controller
             'user_id' => $request->user()->id,
             'book_id' => $book->id,
             'borrow_date' => $validated['borrow_date'],
-            'due_date' => date('Y-m-d', strtotime($validated['borrow_date']. ' + 7 days')),
+            'due_date' => date('Y-m-d', strtotime($validated['borrow_date'] . ' + 7 days')),
             'status' => 'Pending',
         ]);
 
         return ResponseFormatter::success($borrowing->api_response, 'Berhasil meminjam buku');
     }
 
-    public function getUserBorrowings(Request $request){
+    public function getUserBorrowings(Request $request)
+    {
         $borrowings = Borrowing::where('user_id', $request->user()->id)->with('book')->get();
 
-        $borrowings = $borrowings->map(function($borrowing){
+        $borrowings = $borrowings->map(function ($borrowing) {
             return $borrowing->api_response;
         });
 
         return ResponseFormatter::success($borrowings);
     }
 
-    public function adminDashboardBorrowings(){
+    public function adminDashboardBorrowings()
+    {
         $borrowings = Borrowing::with('book', 'user')->get();
         $books = Book::all();
 
-        $borrowings = $borrowings->map(function($borrowing){
+        $borrowings = $borrowings->map(function ($borrowing) {
             return $borrowing->admin_dashboard_response;
         });
+
+        // Get monthly borrowing statistics for the last 6 months
+        $monthlyStats = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthName = $date->translatedFormat('F'); // Full month name in Indonesian
+            $startOfMonth = $date->copy()->startOfMonth();
+            $endOfMonth = $date->copy()->endOfMonth();
+
+            $count = Borrowing::whereBetween('borrow_date', [$startOfMonth, $endOfMonth])
+                ->whereIn('status', ['Dipinjam', 'Dikembalikan', 'Terlambat'])
+                ->count();
+
+            $monthlyStats[] = [
+                'month' => $monthName,
+                'count' => $count,
+            ];
+        }
+
+        // Get top 5 most borrowed books this month
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+
+        $topBooks = Borrowing::select('book_id')
+            ->selectRaw('COUNT(*) as borrow_count')
+            ->whereBetween('borrow_date', [$startOfMonth, $endOfMonth])
+            ->groupBy('book_id')
+            ->orderByDesc('borrow_count')
+            ->limit(5)
+            ->with('book')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->book_id,
+                    'title' => $item->book->judul,
+                    'author' => $item->book->pengarang,
+                    'count' => $item->borrow_count,
+                ];
+            });
 
         $data = [
             'total_books' => $books->count(),
@@ -59,6 +101,8 @@ class BorrowController extends Controller
             'books_overdue_this_month' => $borrowings->where('status', 'Terlambat')->where('due_date', '>=', now()->startOfWeek()->format('Y-m-d'))->count(),
             'pending_borrowings' => $borrowings->where('status', 'Pending')->values()->take(3),
             'late_borrowings' => $borrowings->where('status', 'Terlambat')->values()->take(3),
+            'monthly_stats' => $monthlyStats,
+            'top_books' => $topBooks,
         ];
 
         return ResponseFormatter::success($data);
