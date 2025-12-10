@@ -219,28 +219,28 @@ export default function KelolaKategori() {
                         <h1 className="text-3xl font-bold text-slate-700 mb-2">Kelola Kategori</h1>
                         <p className="text-gray-500">Kelola kategori buku perpustakaan</p>
                     </div>
-                    <Button
-                        onClick={handleOpenAddDialog}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 h-11 rounded-xl flex items-center gap-2"
-                    >
-                        <Plus size={20} />
-                        Tambah Kategori
-                    </Button>
                 </header>
 
-                {/* --- SEARCH BAR --- */}
+                {/* --- SEARCH BAR & TAMBAH KATEGORI --- */}
                 <div className="flex w-full items-center gap-4 mb-6 pt-6">
                     <div className="relative flex-1">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                             <Search size={20} />
                         </div>
                         <Input
-                            className="py-6 w-full pl-12 pr-12 bg-white border-gray-200 rounded-xl shadow-sm focus-visible:ring-blue-500 placeholder:text-gray-400 text-sm"
+                            className="w-full pl-12 pr-12 py-6 bg-white border-gray-200 rounded-xl shadow-sm focus-visible:ring-blue-500 placeholder:text-gray-400 text-base"
                             placeholder="Cari berdasarkan nama atau slug kategori"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
+                    <Button
+                        onClick={handleOpenAddDialog}
+                        className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-white font-bold px-6 py-6 rounded-xl flex items-center gap-2 whitespace-nowrap shadow-sm"
+                    >
+                        <Plus size={18} />
+                        Tambah Kategori
+                    </Button>
                 </div>
 
                 {/* --- TABLE CONTENT --- */}
