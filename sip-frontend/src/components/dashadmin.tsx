@@ -147,7 +147,7 @@ export default function DashAdmin() {
                               ))
                             ) : (
                               <tr>
-                                <td colSpan={2} className="p-5 text-center text-slate-500">Tidak ada data pending.</td>
+                                <td colSpan={3} className="p-5 text-center text-slate-500">Tidak ada data pending.</td>
                               </tr>
                             )}
                         </tbody>
