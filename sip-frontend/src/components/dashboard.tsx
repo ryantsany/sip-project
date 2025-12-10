@@ -168,7 +168,6 @@ export default function Dashboard() {
         break;
       case "newest":
       default:
-        // Already sorted by newest from API
         break;
     }
 
@@ -189,21 +188,24 @@ export default function Dashboard() {
 
       {/* --- MAIN CONTENT --- */}
       <main className="flex-1 md:ml-64 p-8 overflow-y-auto">
-        <header className="flex justify-between items-start mb-8 relative z-50">
+        <header className="flex justify-between items-start relative z-50">
           <div>
             <h1 className="text-3xl font-bold text-slate-700">
               Selamat datang kembali,
-            </h1>
-            {loading ? (
-              <Skeleton className="h-9 w-48 mt-2" />
+              {loading ? (
+              <Skeleton className="h-9 w-48" />
             ) : (
-              <h1 className="text-3xl font-bold text-slate-700">
-                {user?.nama ? user.nama.split(' ')[0] : "User"}!
-              </h1>
+              <span className="text-3xl font-bold text-blue-500">
+                {user?.nama ? ` ${user.nama.split(' ')[0]}` : "User"}!
+              </span>
             )}
+            </h1>
           </div>
           <NotificationDropdown />
         </header>
+        <p className="text-gray-500">
+          Temukan buku yang ingin Anda pinjam dengan mudah.
+        </p>
 
         {/* Search & Filters Container */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8 mt-10">

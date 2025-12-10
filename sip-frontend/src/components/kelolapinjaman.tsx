@@ -9,6 +9,9 @@ import {
     CheckSquare,
     X,
     Loader2,
+    BellRing,
+    CalendarPlus2,
+    BookCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -32,7 +35,7 @@ export default function KelolaPinjaman() {
     const [borrowings, setBorrowings] = useState<ManageBorrowingRecord[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedLoan, setSelectedLoan] = useState<ManageBorrowingRecord | null>(null);
-    const [actionState, setActionState] = useState<{ type: 'accept' | 'extend' | null; id: string | null }>({
+    const [actionState, setActionState] = useState<{ type: 'accept' | 'extend' | 'return' | null; id: string | null }>({
         type: null,
         id: null,
     });
@@ -184,6 +187,29 @@ export default function KelolaPinjaman() {
         }
     };
 
+    const handleReturnBook = async () => {
+        if (!selectedLoan) return;
+
+        setActionState({ type: "return", id: selectedLoan.id });
+        try {
+            await http.post(`/borrowings/${selectedLoan.id}/return`, {});
+            toast.success("Buku dikembalikan", {
+                description: `Buku "${selectedLoan.book_title ?? "-"}" telah dikembalikan.`,
+                className: "!bg-white !text-slate-900 !border-slate-200",
+            });
+            setIsDialogOpen(false);
+            fetchBorrowings();
+        } catch (error) {
+            console.error(error);
+            toast.error("Gagal mengembalikan buku", {
+                description: "Terjadi kesalahan saat memproses pengembalian.",
+                className: "!bg-white !text-slate-900 !border-slate-200",
+            });
+        } finally {
+            setActionState({ type: null, id: null });
+        }
+    };
+
     const handleTabChange = (tab: "aktif" | "pengajuan" | "terlambat" | "dikembalikan") => {
         setActiveTab(tab);
         setSearchQuery("");
@@ -300,7 +326,8 @@ export default function KelolaPinjaman() {
                                 <th className="p-6 font-bold text-slate-700 text-center">Tanggal Pengambilan</th>
                             )}
                             
-                            <th className="p-6 font-bold text-slate-700 text-center">Tenggat</th>
+                            {activeTab === "dikembalikan" && (<th className="p-6 font-bold text-slate-700 text-center">Tanggal Pengembalian</th>)}
+                            {activeTab !== "dikembalikan" && (<th className="p-6 font-bold text-slate-700 text-center">Tenggat</th>)}
                             <th className="p-6 font-bold text-slate-700 text-center">Status</th>
                             
                             {activeTab !== "pengajuan" && (
@@ -487,6 +514,21 @@ export default function KelolaPinjaman() {
                                         Setujui Peminjaman
                                     </Button>
                                 </div>
+                            ) : activeTab === "dikembalikan" ? (<></>) : activeTab === "terlambat" ? (
+                                <div className="space-y-4 text-right">
+                                    <Button 
+                                            onClick={handleReturnBook}
+                                            disabled={isActionLoading}
+                                            className="h-10 rounded-xl px-8 font-bold bg-[#04AA6D] text-white hover:bg-[#079b65] hover:cursor-pointer disabled:opacity-60"
+                                        >
+                                            {actionState.type === "return" ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <BookCheck />
+                                            )}
+                                            Dikembalikan
+                                        </Button>
+                                </div>
                             ) : (
                                 <div className="space-y-4">
                                     <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl text-sm text-blue-900">
@@ -500,20 +542,26 @@ export default function KelolaPinjaman() {
                                     </div>
                                     <div className="flex gap-3 justify-end">
                                         <Button 
-                                            onClick={() => setIsDialogOpen(false)} 
-                                            className="h-10 rounded-xl bg-red-600 px-8 font-bold text-white hover:bg-red-700 hover:cursor-pointer"
+                                            onClick={handleReturnBook}
+                                            disabled={isActionLoading}
+                                            className="h-10 rounded-xl px-8 font-bold bg-[#04AA6D] text-white hover:bg-[#079b65] hover:cursor-pointer disabled:opacity-60"
                                         >
-                                            Tutup
+                                            {actionState.type === "return" ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <BookCheck />
+                                            )}
+                                            Dikembalikan
                                         </Button>
                                         <Button
                                             onClick={handleExtendLoan}
                                             disabled={!canExtendLoan || isActionLoading}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center font-bold px-6 h-10 rounded-xl gap-2 disabled:opacity-60"
+                                            className="bg-blue-500 hover:bg-blue-600 cursor-pointer text-white flex items-center font-bold px-6 h-10 rounded-xl gap-2 disabled:opacity-60"
                                         >
                                             {actionState.type === "extend" ? (
                                                 <Loader2 className="h-4 w-4 animate-spin" />
                                             ) : null}
-                                            Perpanjang 1 Minggu
+                                            <CalendarPlus2 /> Perpanjang
                                         </Button>
                                     </div>
                                     {!canExtendLoan && (

@@ -15,6 +15,7 @@ import {
   History, 
   Lock,    
   User,
+  GalleryVerticalEnd,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -72,7 +73,7 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
 
       <nav className="flex-1 space-y-2">
         {/* --- MENU ADMIN --- */}
-        {role === "admin" && (
+        {user?.role === "admin" && (
           <>
             <Link href="/admin/dashboard" className="block">
               <Button variant="ghost" className={getLinkClass("/admin/dashboard")}>
@@ -84,6 +85,12 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
               <Button variant="ghost" className={getLinkClass("/admin/kelolabuku")}>
                 <BookOpen size={20} />
                 Kelola Buku
+              </Button>
+            </Link>
+            <Link href="/admin/kelolakategori" className="block">
+              <Button variant="ghost" className={getLinkClass("/admin/kelolakategori")}>
+                <GalleryVerticalEnd size={20} />
+                Kelola Kategori
               </Button>
             </Link>
             <Link href="/admin/kelolauser" className="block">
@@ -98,11 +105,17 @@ export default function Sidebar({ role = "siswa" }: SidebarProps) {
                 Kelola Pinjaman
               </Button>
             </Link>
+            <Link href="/gantipassword" className="block">
+              <Button variant="ghost" className={getLinkClass("/gantipassword")}>
+                <Lock size={20} />
+                Ubah Kata Sandi
+              </Button>
+            </Link>
           </>
         )}
 
         {/* --- MENU SISWA --- */}
-        {role === "siswa" && (
+        {user?.role === "siswa" && (
           <>
             <Link href="/dashboard" className="block">
               <Button variant="ghost" className={getLinkClass("/dashboard")}>

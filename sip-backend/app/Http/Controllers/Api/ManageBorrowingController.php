@@ -82,8 +82,9 @@ class ManageBorrowingController extends Controller
         return ResponseFormatter::success($borrowing->api_response, 'Peminjaman berhasil disetujui.');
     }
 
-    public function adminReturnBorrow(Borrowing $borrowing)
+    public function returnBook($id)
     {
+        $borrowing = Borrowing::findOrFail($id);
         $borrowing->loadMissing('book');
 
         if ($borrowing->status === 'Dikembalikan') {
@@ -92,6 +93,7 @@ class ManageBorrowingController extends Controller
 
         $borrowing->status = 'Dikembalikan';
         $borrowing->return_date = now()->format('Y-m-d');
+        $borrowing->book()->increment('stok');
         $borrowing->save();
 
         return ResponseFormatter::success($borrowing->api_response, 'Buku telah dikembalikan.');
