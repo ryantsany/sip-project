@@ -109,13 +109,13 @@ export default function DetailBuku() {
             toast.success("Berhasil Meminjam Buku!", {
                 description: `Buku "${bookSummary?.judul}" berhasil dipinjam untuk tanggal ${readableBorrowDate}.`,
                 duration: 5000,
+                className: "!bg-white !text-slate-900 !border-slate-200",
                 action: {
                     label: "Lihat",
                     onClick: () => {
                         window.location.href = "/riwayatpinjam";
                     },
                 },
-                style: {backgroundColor: "bg-blue-600", color: "white"},
             });
             setIsDialogOpen(false);
         } catch (error) {
