@@ -9,27 +9,27 @@ import { useAuth } from "@/context/auth-context";
 import {
   Search,
   SlidersHorizontal,
-  Filter, 
+  Filter,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar";
 import NotificationDropdown from "@/components/notifikasi";
-import { BookSummary, LatestBooksResponse, BooksResponse, CategoriesResponse, AllBooksResponse } from "@/types/api";
+import { BookSummary, LatestBooksResponse, BooksResponse, CategoriesResponse, AllBooksResponse, Category } from "@/types/api";
 
 type SortOption = "newest" | "title" | "author" | "year";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const [books, setBooks] = useState<BookSummary[]>([]);
-  const [categories, setCategories] = useState<string[]>(["Semua"]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchResults, setSearchResults] = useState<BookSummary[]>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("Semua");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
-  
+
   // Dropdown states
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -40,7 +40,7 @@ export default function Dashboard() {
   const [hasMoreBooks, setHasMoreBooks] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null); 
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -50,9 +50,9 @@ export default function Dashboard() {
           http.get<LatestBooksResponse>("/books-latest"),
           http.get<CategoriesResponse>("/categories")
         ]);
-        
+
         setBooks(booksResponse.data);
-        setCategories(["Semua", ...categoriesResponse.data]);
+        setCategories(categoriesResponse.data);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -65,17 +65,17 @@ export default function Dashboard() {
   // Fetch all books with pagination
   const fetchAllBooks = useCallback(async (page: number, reset: boolean = false) => {
     if (isLoadingMore && !reset) return;
-    
+
     try {
       setIsLoadingMore(true);
       const response = await http.get<AllBooksResponse>(`/books?page=${page}`);
-      
+
       if (page === 1 || reset) {
         setAllBooks(response.data.data);
       } else {
         setAllBooks(prev => [...prev, ...response.data.data]);
       }
-      
+
       setHasMoreBooks(response.data.current_page < response.data.last_page);
       setAllBooksPage(response.data.current_page);
     } catch (error) {
@@ -88,7 +88,7 @@ export default function Dashboard() {
   // Initial fetch for all books
   useEffect(() => {
     fetchAllBooks(1, true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Intersection Observer for infinite scroll
@@ -99,7 +99,7 @@ export default function Dashboard() {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMoreBooks && !isLoadingMore && selectedCategory === "Semua" && searchQuery === "") {
+        if (entries[0].isIntersecting && hasMoreBooks && !isLoadingMore && selectedCategory === null && searchQuery === "") {
           fetchAllBooks(allBooksPage + 1);
         }
       },
@@ -144,16 +144,16 @@ export default function Dashboard() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setSelectedCategory("Semua");
+    setSelectedCategory(null);
   };
 
   // Logic to filter and sort books
   const displayedBooks = useMemo(() => {
-    let result = searchQuery.trim() 
-      ? searchResults 
-      : selectedCategory === "Semua"
+    let result = searchQuery.trim()
+      ? searchResults
+      : selectedCategory === null
         ? [...books]
-        : books.filter((b) => b.kategori === selectedCategory);
+        : books.filter((b) => b.category?.name === selectedCategory);
 
     // Apply Sorting
     switch (sortBy) {
@@ -184,7 +184,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
-      
+
       <Sidebar />
 
       {/* --- MAIN CONTENT --- */}
@@ -202,12 +202,12 @@ export default function Dashboard() {
               </h1>
             )}
           </div>
-          <NotificationDropdown/>
+          <NotificationDropdown />
         </header>
 
         {/* Search & Filters Container */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8 mt-10">
-          
+
           {/* Search Bar */}
           <div className="relative flex-1">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -226,16 +226,15 @@ export default function Dashboard() {
             <button
               onClick={() => {
                 setIsCategoryOpen(!isCategoryOpen);
-                setIsSortOpen(false); 
+                setIsSortOpen(false);
               }}
-              className={`flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-blue-300 transition-colors min-w-[160px] justify-between ${
-                isCategoryOpen ? "border-blue-500 ring-2 ring-blue-100" : ""
-              }`}
+              className={`flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-blue-300 transition-colors min-w-[160px] justify-between ${isCategoryOpen ? "border-blue-500 ring-2 ring-blue-100" : ""
+                }`}
             >
               <div className="flex items-center gap-2 overflow-hidden">
                 <Filter size={18} className="text-gray-500 shrink-0" />
                 <span className="text-sm text-slate-700 font-medium truncate">
-                  {selectedCategory}
+                  {selectedCategory ?? "Semua"}
                 </span>
               </div>
             </button>
@@ -244,29 +243,41 @@ export default function Dashboard() {
               <div className="absolute right-0 top-full mt-2 w-56 z-50 animate-in fade-in zoom-in-95 duration-200">
                 {/* DIV LUAR: Bentuk dan Bayangan */}
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                  
+
                   {/* DIV DALAM: Scrolling dan Padding */}
                   <div className="max-h-80 overflow-y-auto mt-1">
-                    
+
                     {/* HEADER: Z-10 dan sticky */}
                     <p className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider sticky top-0 bg-white z-10 border-b border-gray-50/20 mb-1">
                       Pilih Kategori
                     </p>
-                    
+
+                    {/* "Semua" option */}
+                    <button
+                      onClick={() => {
+                        setSelectedCategory(null);
+                        setIsCategoryOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors relative z-0 ${selectedCategory === null
+                          ? "bg-blue-50 text-blue-600 font-semibold"
+                          : "text-slate-600 hover:bg-gray-50"
+                        }`}
+                    >
+                      Semua
+                    </button>
                     {categories.map((category) => (
                       <button
-                        key={category}
+                        key={category.id}
                         onClick={() => {
-                          setSelectedCategory(category);
+                          setSelectedCategory(category.name);
                           setIsCategoryOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors relative z-0 ${
-                          selectedCategory === category
+                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors relative z-0 ${selectedCategory === category.name
                             ? "bg-blue-50 text-blue-600 font-semibold"
                             : "text-slate-600 hover:bg-gray-50"
-                        }`}
+                          }`}
                       >
-                        {category}
+                        {category.name}
                       </button>
                     ))}
                   </div>
@@ -280,11 +291,10 @@ export default function Dashboard() {
             <button
               onClick={() => {
                 setIsSortOpen(!isSortOpen);
-                setIsCategoryOpen(false); 
+                setIsCategoryOpen(false);
               }}
-              className={`flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-blue-300 transition-colors ${
-                isSortOpen ? "border-blue-500 ring-2 ring-blue-100" : ""
-              }`}
+              className={`flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-blue-300 transition-colors ${isSortOpen ? "border-blue-500 ring-2 ring-blue-100" : ""
+                }`}
             >
               <SlidersHorizontal size={18} className="text-gray-500" />
               <span className="text-sm text-slate-700 font-medium">
@@ -304,11 +314,10 @@ export default function Dashboard() {
                       setSortBy(option.value);
                       setIsSortOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                      sortBy === option.value
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortBy === option.value
                         ? "bg-blue-50 text-blue-600 font-semibold"
                         : "text-slate-600 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     {option.label}
                   </button>
@@ -325,9 +334,9 @@ export default function Dashboard() {
               <h2 className="text-xl font-bold text-slate-600">
                 Hasil pencarian: &quot;{searchQuery}&quot;
               </h2>
-            ) : selectedCategory === "Semua" ? (
+            ) : selectedCategory === null ? (
               <h2 className="text-xl font-bold text-slate-600 group-hover:text-blue-600 transition-colors">
-                  Baru ditambahkan
+                Baru ditambahkan
               </h2>
             ) : (
               <h2 className="text-xl font-bold text-slate-600">
@@ -352,14 +361,14 @@ export default function Dashboard() {
         </section>
 
         {/* --- ALL BOOKS WITH LAZY LOADING --- */}
-        {selectedCategory === "Semua" && searchQuery === "" && (
+        {selectedCategory === null && searchQuery === "" && (
           <section>
             <h2 className="text-xl font-bold text-slate-600 mb-4">Semua buku</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {allBooks.map((book, index) => (
                 <BookCard key={`all-${book.slug}-${index}`} book={book} />
               ))}
-              
+
               {/* Loading skeletons */}
               {isLoadingMore && (
                 Array.from({ length: 5 }).map((_, index) => (
@@ -367,11 +376,11 @@ export default function Dashboard() {
                 ))
               )}
             </div>
-            
+
             {/* Intersection Observer Target */}
             {hasMoreBooks && (
-              <div 
-                ref={loadMoreRef} 
+              <div
+                ref={loadMoreRef}
                 className="h-10 w-full flex items-center justify-center mt-4"
               >
                 {isLoadingMore && (
@@ -404,16 +413,16 @@ function BookCard({ book }: { book: BookSummary }) {
     <Link href={`/detailbuku?buku=${book.slug}`} className="block h-full">
       <div className="group relative aspect-2/3 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer bg-gray-200">
         {book.cover_url ? (
-            <Image src={`${ASSET_BASE}${book.cover_url}`} alt={book.judul} fill className="object-cover" unoptimized/>
+          <Image src={`${ASSET_BASE}${book.cover_url}`} alt={book.judul} fill className="object-cover" unoptimized />
         ) : (
-            <span className="text-xl text-slate-400 text-center leading-tight p-1 font-medium">
-                No Image
-            </span>
+          <span className="text-xl text-slate-400 text-center leading-tight p-1 font-medium">
+            No Image
+          </span>
         )}
         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
         <div className="absolute top-3 left-3">
           <span className="bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-1 rounded-full text-slate-800 uppercase tracking-wide">
-            {book.kategori}
+            {book.category?.name ?? "Uncategorized"}
           </span>
         </div>
         <div className="absolute bottom-4 left-4 right-4 text-white">

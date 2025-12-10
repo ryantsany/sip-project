@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Book;
+use App\Models\Category;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
@@ -15,6 +16,32 @@ class BookSeeder extends Seeder
      */
     public function run(): void
     {
+        // Define categories
+        $categoryNames = [
+            'Pengembangan Diri',
+            'Fiksi Sejarah',
+            'Misteri',
+            'Teknologi',
+            'Fiksi',
+            'Bisnis',
+            'Non-Fiksi',
+            'Pendidikan',
+            'Inspirasi',
+            'Sains',
+            'Fiksi Remaja',
+            'Fantasi',
+            'Komik Edukasi',
+        ];
+
+        // Seed categories first
+        $categories = [];
+        foreach ($categoryNames as $name) {
+            $categories[$name] = Category::firstOrCreate(
+                ['slug' => Str::slug($name)],
+                ['name' => $name]
+            );
+        }
+
         $booksData = [
             [
                 'judul' => 'Filosofi Teras: Cara Hidup Bahagia Masa Kini',
@@ -24,7 +51,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2018,
                 'isbn' => '978-602-412-518-9',
                 'deskripsi' => 'Panduan praktis untuk menghadapi emosi negatif dengan prinsip-prinsip Stoisisme.',
-                'kategori' => 'Pengembangan Diri',
+                'category_name' => 'Pengembangan Diri',
                 'jumlah' => 12,
                 'stok' => 8,
                 'status' => 'available',
@@ -37,7 +64,7 @@ class BookSeeder extends Seeder
                 'tahun' => 1980,
                 'isbn' => '978-979-99408-0-9',
                 'deskripsi' => 'Novel pertama dari Tetralogi Buru yang mengisahkan perjuangan Minke di era kolonial.',
-                'kategori' => 'Fiksi Sejarah',
+                'category_name' => 'Fiksi Sejarah',
                 'jumlah' => 8,
                 'stok' => 0,
                 'status' => 'unavailable',
@@ -50,7 +77,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2019,
                 'isbn' => '978-602-06331-5-6',
                 'deskripsi' => 'Metode yang terbukti mudah untuk membangun kebiasaan baik dan menghilangkan kebiasaan buruk.',
-                'kategori' => 'Pengembangan Diri',
+                'category_name' => 'Pengembangan Diri',
                 'jumlah' => 25,
                 'stok' => 20,
                 'status' => 'available',
@@ -63,7 +90,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2020,
                 'isbn' => '978-979-780-975-7',
                 'deskripsi' => 'Kumpulan cerita horor dan misteri berdasarkan riset dan pengalaman di Pulau Jawa.',
-                'kategori' => 'Misteri',
+                'category_name' => 'Misteri',
                 'jumlah' => 15,
                 'stok' => 15,
                 'status' => 'available',
@@ -76,7 +103,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2022,
                 'isbn' => '978-623-01-2917-0',
                 'deskripsi' => 'Buku panduan komprehensif untuk memulai pemrograman web menggunakan PHP dan database MySQL.',
-                'kategori' => 'Teknologi',
+                'category_name' => 'Teknologi',
                 'jumlah' => 10,
                 'stok' => 5,
                 'status' => 'available',
@@ -89,7 +116,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2002,
                 'isbn' => '978-979-22-6720-7',
                 'deskripsi' => 'Kisah epik yang memadukan sejarah, mitos, dan kritik sosial dengan gaya realisme magis.',
-                'kategori' => 'Fiksi',
+                'category_name' => 'Fiksi',
                 'jumlah' => 7,
                 'stok' => 2,
                 'status' => 'available',
@@ -102,7 +129,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2011,
                 'isbn' => '978-030-788-789-4',
                 'deskripsi' => 'Metodologi untuk membangun bisnis yang sukses dengan validasi ide cepat dan umpan balik pelanggan.',
-                'kategori' => 'Bisnis',
+                'category_name' => 'Bisnis',
                 'jumlah' => 9,
                 'stok' => 9,
                 'status' => 'available',
@@ -115,7 +142,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2005,
                 'isbn' => '978-979-3062-79-1',
                 'deskripsi' => 'Kisah inspiratif tentang semangat belajar anak-anak di Belitung yang serba kekurangan.',
-                'kategori' => 'Fiksi',
+                'category_name' => 'Fiksi',
                 'jumlah' => 18,
                 'stok' => 10,
                 'status' => 'available',
@@ -128,7 +155,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2017,
                 'isbn' => '978-602-424-401-9',
                 'deskripsi' => 'Penjelajahan evolusi manusia, dari pemburu-pengumpul hingga peradaban masa kini.',
-                'kategori' => 'Non-Fiksi',
+                'category_name' => 'Non-Fiksi',
                 'jumlah' => 11,
                 'stok' => 0,
                 'status' => 'unavailable',
@@ -141,7 +168,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2023,
                 'isbn' => '978-623-00-5111-6',
                 'deskripsi' => 'Buku latihan soal berbentuk teka-teki silang untuk memahami konsep dasar jaringan komputer.',
-                'kategori' => 'Pendidikan',
+                'category_name' => 'Pendidikan',
                 'jumlah' => 5,
                 'stok' => 5,
                 'status' => 'available',
@@ -154,7 +181,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2017,
                 'isbn' => '978-602-424-694-5',
                 'deskripsi' => 'Novel tentang kisah persahabatan, cinta, dan perjuangan aktivis di masa Orde Baru.',
-                'kategori' => 'Fiksi Sejarah',
+                'category_name' => 'Fiksi Sejarah',
                 'jumlah' => 14,
                 'stok' => 11,
                 'status' => 'available',
@@ -167,7 +194,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2002,
                 'isbn' => '979-686-501-5',
                 'deskripsi' => 'Prinsip-prinsip dasar literasi keuangan dan cara pandang orang kaya terhadap uang.',
-                'kategori' => 'Bisnis',
+                'category_name' => 'Bisnis',
                 'jumlah' => 16,
                 'stok' => 1,
                 'status' => 'available',
@@ -180,7 +207,7 @@ class BookSeeder extends Seeder
                 'tahun' => 1988,
                 'isbn' => '978-055-338-016-3',
                 'deskripsi' => 'Penjelasan ilmiah yang populer tentang alam semesta, lubang hitam, dan teori relativitas.',
-                'kategori' => 'Sains',
+                'category_name' => 'Sains',
                 'jumlah' => 6,
                 'stok' => 0,
                 'status' => 'unavailable',
@@ -193,7 +220,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2014,
                 'isbn' => '978-602-7870-41-3',
                 'deskripsi' => 'Kisah romantis remaja SMA di Bandung pada tahun 1990.',
-                'kategori' => 'Fiksi Remaja',
+                'category_name' => 'Fiksi Remaja',
                 'jumlah' => 20,
                 'stok' => 18,
                 'status' => 'available',
@@ -206,7 +233,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2019,
                 'isbn' => '978-602-453-125-9',
                 'deskripsi' => 'Buku ajar yang membahas konsep dan aplikasi ekonomi pembangunan di negara berkembang.',
-                'kategori' => 'Pendidikan',
+                'category_name' => 'Pendidikan',
                 'jumlah' => 8,
                 'stok' => 4,
                 'status' => 'available',
@@ -219,7 +246,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2000,
                 'isbn' => '978-979-20-1925-5',
                 'deskripsi' => 'Kumpulan kisah inspiratif tentang kehidupan, cinta, dan kebijaksanaan.',
-                'kategori' => 'Inspirasi',
+                'category_name' => 'Inspirasi',
                 'jumlah' => 10,
                 'stok' => 7,
                 'status' => 'available',
@@ -232,7 +259,7 @@ class BookSeeder extends Seeder
                 'tahun' => 1954,
                 'isbn' => '978-061-826-029-2',
                 'deskripsi' => 'Bagian pertama dari trilogi fantasi epik tentang perjalanan Frodo Baggins.',
-                'kategori' => 'Fantasi',
+                'category_name' => 'Fantasi',
                 'jumlah' => 5,
                 'stok' => 0,
                 'status' => 'unavailable',
@@ -245,7 +272,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2021,
                 'isbn' => '978-623-04-0309-8',
                 'deskripsi' => 'Komik edukasi untuk anak-anak yang menjelaskan tata surya, bintang, dan galaksi.',
-                'kategori' => 'Komik Edukasi',
+                'category_name' => 'Komik Edukasi',
                 'jumlah' => 22,
                 'stok' => 20,
                 'status' => 'available',
@@ -258,7 +285,7 @@ class BookSeeder extends Seeder
                 'tahun' => 2009,
                 'isbn' => '978-979-22-4780-3',
                 'deskripsi' => 'Kisah inspiratif tentang enam sahabat yang menuntut ilmu di pondok pesantren.',
-                'kategori' => 'Inspirasi',
+                'category_name' => 'Inspirasi',
                 'jumlah' => 13,
                 'stok' => 9,
                 'status' => 'available',
@@ -287,9 +314,18 @@ class BookSeeder extends Seeder
                 $slug = $baseSlug . '-' . ($count + 1);
             }
 
+            // Get category_id from category_name
+            $categoryName = $bookData['category_name'];
+            $categoryId = isset($categories[$categoryName]) ? $categories[$categoryName]->id : null;
+
+            // Remove category_name and add category_id and slug
+            unset($bookData['category_name']);
+            $bookData['category_id'] = $categoryId;
             $bookData['slug'] = $slug;
+
             $finalBooks[] = $bookData;
             Book::create($bookData);
         }
     }
 }
+

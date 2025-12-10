@@ -239,7 +239,7 @@ export default function DetailBuku() {
                                 <div className="flex items-start">
                                     <span className="font-semibold text-slate-800 w-28 shrink-0">Kategori</span>
                                     <span className="mr-3 text-slate-800">:</span>
-                                    <span className="text-slate-600 flex-1">{bookSummary.kategori}</span>
+                                    <span className="text-slate-600 flex-1">{bookSummary.category?.name}</span>
                                 </div>
 
                                 {/* Stok */}

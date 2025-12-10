@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Models\Category;
 use App\ResponseFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -20,7 +21,7 @@ class BookController extends Controller
             'tahun' => 'required|integer|between:1900,' . date('Y'),
             'isbn' => 'required|string|unique:books',
             'deskripsi' => 'nullable|string',
-            'kategori' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
             'jumlah' => 'required|integer|min:1',
             'status' => 'required|string|in:available,unavailable',
         ]);
@@ -46,7 +47,7 @@ class BookController extends Controller
             'tahun' =>  $request->tahun,
             'isbn' => $request->isbn,
             'deskripsi' => $request->deskripsi,
-            'kategori' => $request->kategori,
+            'category_id' => $request->category_id,
             'jumlah' => $request->jumlah,
             'stok' => $request->jumlah,
             'status' => $request->status,
@@ -69,7 +70,7 @@ class BookController extends Controller
             'tahun' => 'sometimes|required|integer|between:1900,' . date('Y'),
             'isbn' => 'sometimes|required|string',
             'deskripsi' => 'sometimes|nullable|string',
-            'kategori' => 'sometimes|nullable|string',
+            'category_id' => 'sometimes|nullable|exists:categories,id',
             'jumlah' => 'sometimes|required|integer|min:1',
             'stok' => 'sometimes|required|integer|min:0',
             'status' => 'sometimes|required|string|in:available,unavailable',
@@ -100,7 +101,7 @@ class BookController extends Controller
             'tahun' => $payload['tahun'] ?? $book->tahun,
             'isbn' => $payload['isbn'] ?? $book->isbn,
             'deskripsi' => array_key_exists('deskripsi', $payload) ? $payload['deskripsi'] : $book->deskripsi,
-            'kategori' => array_key_exists('kategori', $payload) ? $payload['kategori'] : $book->kategori,
+            'category_id' => array_key_exists('category_id', $payload) ? $payload['category_id'] : $book->category_id,
             'jumlah' => $payload['jumlah'] ?? $book->jumlah,
             'stok' => $payload['stok'] ?? $book->stok,
             'status' => $payload['status'] ?? $book->status,
@@ -123,7 +124,8 @@ class BookController extends Controller
 
     public function getAllBooks()
     {
-        $books = Book::orderBy('created_at', 'desc')
+        $books = Book::with('category')
+            ->orderBy('created_at', 'desc')
             ->paginate(6)
             ->through(fn(Book $book) => $book->api_response);
 
@@ -132,7 +134,8 @@ class BookController extends Controller
 
     public function getAllBooksForUser()
     {
-        $books = Book::orderBy('created_at', 'desc')
+        $books = Book::with('category')
+            ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn(Book $book) => $book->api_response);
 
@@ -141,7 +144,8 @@ class BookController extends Controller
 
     public function getFourLatestBooks()
     {
-        $books = Book::orderBy('created_at', 'desc')
+        $books = Book::with('category')
+            ->orderBy('created_at', 'desc')
             ->take(5)
             ->get()
             ->map(fn(Book $book) => $book->api_response);
@@ -151,7 +155,7 @@ class BookController extends Controller
 
     public function getBookDetails($slug)
     {
-        $book = Book::where('slug', $slug)->first();
+        $book = Book::with('category')->where('slug', $slug)->first();
 
         if (!$book) {
             return ResponseFormatter::error(404, null, ['Buku tidak ditemukan']);
@@ -164,8 +168,11 @@ class BookController extends Controller
     {
         $query = $request->input('query');
 
-        $books = Book::where('judul', 'like', '%' . $query . '%')
-            ->orWhere('kategori', 'like',   $query)
+        $books = Book::with('category')
+            ->where('judul', 'like', '%' . $query . '%')
+            ->orWhereHas('category', function ($q) use ($query) {
+                $q->where('name', 'like', '%' . $query . '%');
+            })
             ->orWhere('isbn', 'like', '%' . $query . '%')
             ->orderBy('created_at', 'desc')
             ->paginate(10)
@@ -173,14 +180,5 @@ class BookController extends Controller
 
         return ResponseFormatter::success($books);
     }
-
-    public function getAllCategories()
-    {
-        $categories = Book::select('kategori')
-            ->distinct()
-            ->whereNotNull('kategori')
-            ->pluck('kategori');
-
-        return ResponseFormatter::success($categories);
-    }
 }
+

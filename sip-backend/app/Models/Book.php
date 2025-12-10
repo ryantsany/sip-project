@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class Book extends Model
@@ -15,7 +16,7 @@ class Book extends Model
         'tahun',
         'isbn',
         'deskripsi',
-        'kategori',
+        'category_id',
         'jumlah',
         'stok',
         'status',
@@ -35,6 +36,14 @@ class Book extends Model
         });
     }
 
+    /**
+     * Get the category this book belongs to.
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function getApiResponseAttribute(){
         return [
             'judul' => $this->judul,
@@ -44,7 +53,11 @@ class Book extends Model
             'tahun' => $this->tahun,
             'isbn' => $this->isbn,
             'deskripsi' => $this->deskripsi,
-            'kategori' => $this->kategori,
+            'category' => $this->category ? [
+                'id' => $this->category->id,
+                'name' => $this->category->name,
+                'slug' => $this->category->slug,
+            ] : null,
             'jumlah' => $this->jumlah,
             'stok' => $this->stok,
             'status' => $this->status,

@@ -19,6 +19,12 @@ export interface ProfileData {
 }
 export type ProfileResponse = ApiResponse<ProfileData>;
 
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface BookSummary {
   judul: string;
   cover_url: string | null;
@@ -27,7 +33,7 @@ export interface BookSummary {
   tahun: string;
   isbn: string;
   deskripsi: string | null;
-  kategori: string;
+  category: Category | null;
   jumlah: number | string;
   stok: number | string;
   status: 'available' | 'Dipinjam' | string;
@@ -43,7 +49,8 @@ export interface CreatedBook {
   tahun: number | string;
   isbn: string;
   deskripsi: string | null;
-  kategori: string | null;
+  category_id: number | null;
+  category: Category | null;
   jumlah: number;
   stok: number;
   status: string;
@@ -176,4 +183,4 @@ export interface AdminDashboardData {
 
 export type AdminDashboardResponse = ApiResponse<AdminDashboardData>;
 
-export type CategoriesResponse = ApiResponse<string[]>;
+export type CategoriesResponse = ApiResponse<Category[]>;
