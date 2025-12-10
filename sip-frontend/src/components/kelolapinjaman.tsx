@@ -28,7 +28,7 @@ import {
 
 export default function KelolaPinjaman() {
     const [searchQuery, setSearchQuery] = useState("");
-    const [activeTab, setActiveTab] = useState<"aktif" | "pengajuan">("aktif");
+    const [activeTab, setActiveTab] = useState<"aktif" | "pengajuan" | "terlambat" | "dikembalikan">("aktif");
     const [borrowings, setBorrowings] = useState<ManageBorrowingRecord[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedLoan, setSelectedLoan] = useState<ManageBorrowingRecord | null>(null);
@@ -65,11 +65,15 @@ export default function KelolaPinjaman() {
 
     const groupedBorrowings = useMemo(() => {
         const pending = borrowings.filter((loan) => (loan.status ?? "").toLowerCase() === "pending");
-        const active = borrowings.filter((loan) => (loan.status ?? "").toLowerCase() !== "pending");
+        const active = borrowings.filter((loan) => (loan.status ?? "").toLowerCase() === "dipinjam");
+        const late = borrowings.filter((loan) => ["terlambat", "tenggat"].includes((loan.status ?? "").toLowerCase()));
+        const returned = borrowings.filter((loan) => (loan.status ?? "").toLowerCase() === "dikembalikan");
 
         return {
             aktif: active,
             pengajuan: pending,
+            terlambat: late,
+            dikembalikan: returned,
         } as const;
     }, [borrowings]);
 
@@ -180,7 +184,7 @@ export default function KelolaPinjaman() {
         }
     };
 
-    const handleTabChange = (tab: "aktif" | "pengajuan") => {
+    const handleTabChange = (tab: "aktif" | "pengajuan" | "terlambat" | "dikembalikan") => {
         setActiveTab(tab);
         setSearchQuery("");
     };
@@ -196,16 +200,16 @@ export default function KelolaPinjaman() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case "Dikembalikan":
-                return "bg-green-100 text-green-700 border border-green-200";
+                return "bg-green-100 text-green-700 border border-green-200 tracking-wider";
             case "Pending":
-                return "bg-[#FDF6B2] text-[#723B13] border border-yellow-200"; 
+                return "bg-[#FDF6B2] text-[#723B13] border border-yellow-200 tracking-wider"; 
             case "Tenggat":
             case "Terlambat":
-                return "bg-red-100 text-red-600 border border-red-200";
+                return "bg-red-100 text-red-400 border border-red-200 tracking-wider";
             case "Dipinjam":
-                return "bg-blue-100 text-blue-700 border border-blue-200";
+                return "bg-blue-100 text-blue-500 border border-blue-200 tracking-wider";
             default:
-                return "bg-gray-100 text-gray-700 border border-gray-200"; 
+                return "bg-gray-100 text-gray-500 border border-gray-200 tracking-wider";
         }
     };
 
@@ -226,26 +230,46 @@ export default function KelolaPinjaman() {
         <div className="flex w-full items-center gap-4 mb-6 pt-6">
             
             {/* Tabs Group */}
-            <div className="flex gap-4">
+            <div className="flex gap-2 bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
                 <button
                     onClick={() => handleTabChange("aktif")}
-                    className={`h-12 px-6 rounded-xl font-bold text-sm transition-colors whitespace-nowrap shadow-sm flex items-center justify-center ${
+                    className={`h-10 px-4 rounded-lg font-bold text-sm transition-all whitespace-nowrap flex items-center justify-center tracking-wider ${
                         activeTab === "aktif"
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-slate-500 border border-slate-200 hover:bg-gray-50"
+                        ? "bg-blue-500 text-white shadow-md"
+                        : "text-slate-500 hover:bg-gray-50"
                     }`}
                 >
-                    Peminjaman Aktif
+                    Aktif
                 </button>
                 <button
                     onClick={() => handleTabChange("pengajuan")}
-                    className={`h-12 px-6 rounded-xl font-bold text-sm transition-colors whitespace-nowrap shadow-sm flex items-center justify-center ${
+                    className={`h-10 px-4 rounded-lg font-bold text-sm transition-all whitespace-nowrap flex items-center justify-center tracking-wider ${
                         activeTab === "pengajuan"
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-slate-500 border border-slate-200 hover:bg-gray-50"
+                        ? "bg-blue-500 text-white shadow-md"
+                        : "text-slate-500 hover:bg-gray-50"
                     }`}
                 >
-                    Pengajuan Peminjaman
+                    Pengajuan
+                </button>
+                <button
+                    onClick={() => handleTabChange("terlambat")}
+                    className={`h-10 px-4 rounded-lg font-bold text-sm transition-all whitespace-nowrap flex items-center justify-center tracking-wider ${
+                        activeTab === "terlambat"
+                        ? "bg-blue-500 text-white shadow-md"
+                        : "text-slate-500 hover:bg-gray-50"
+                    }`}
+                >
+                    Terlambat
+                </button>
+                <button
+                    onClick={() => handleTabChange("dikembalikan")}
+                    className={`h-10 px-4 rounded-lg font-bold text-sm transition-all whitespace-nowrap flex items-center justify-center tracking-wider ${
+                        activeTab === "dikembalikan"
+                        ? "bg-blue-500 text-white shadow-md"
+                        : "text-slate-500 hover:bg-gray-50"
+                    }`}
+                >
+                    Dikembalikan
                 </button>
             </div>
 
@@ -256,7 +280,7 @@ export default function KelolaPinjaman() {
                 </div>
                 <Input
                     className="py-6 w-full pl-12 pr-12 bg-white border-gray-200 rounded-xl shadow-sm focus-visible:ring-blue-500 placeholder:text-gray-400 text-sm"
-                    placeholder="Cari berdasarkan user/buku"
+                    placeholder="Cari berdasarkan Nama Peminjam/Buku"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -279,7 +303,7 @@ export default function KelolaPinjaman() {
                             <th className="p-6 font-bold text-slate-700 text-center">Tenggat</th>
                             <th className="p-6 font-bold text-slate-700 text-center">Status</th>
                             
-                            {activeTab === "aktif" && (
+                            {activeTab !== "pengajuan" && (
                                 <th className="p-6 font-bold text-slate-700 text-center">Denda</th>
                             )}
                             
@@ -319,7 +343,11 @@ export default function KelolaPinjaman() {
                                 <td colSpan={6} className="p-10 text-center text-gray-500">
                                     {activeTab === "pengajuan"
                                         ? "Belum ada pengajuan peminjaman."
-                                        : "Belum ada peminjaman aktif."}
+                                        : activeTab === "aktif"
+                                        ? "Belum ada peminjaman aktif."
+                                        : activeTab === "terlambat"
+                                        ? "Tidak ada buku terlambat."
+                                        : "Belum ada buku yang dikembalikan."}
                                 </td>
                             </tr>
                         )}
@@ -344,14 +372,14 @@ export default function KelolaPinjaman() {
                                         </span>
                                     </td>
 
-                                    {activeTab === "aktif" && (
+                                    {activeTab !== "pengajuan" && (
                                         <td className="p-6 text-slate-700 text-center">{formatCurrency(loan.denda)}</td>
                                     )}
 
                                     <td className="p-6 text-center">
                                         <div className="flex justify-center">
                                             <button
-                                                className="bg-blue-50 p-2 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors border border-blue-200"
+                                                className="bg-blue-50 p-2 rounded-lg text-blue-500 hover:bg-blue-100 transition-colors border border-blue-200"
                                                 onClick={() => handleEdit(loan)}
                                             >
                                                 <Pencil size={18} />
@@ -407,9 +435,9 @@ export default function KelolaPinjaman() {
                                 <span className="font-semibold text-slate-700">{selectedLoan.borrower ?? "-"}</span>
                             </div>
 
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Buku:</span>
-                                <span className="font-semibold text-slate-700">{selectedLoan.book_title ?? "-"}</span>
+                            <div className="flex justify-between items-start gap-4">
+                                <span className="text-slate-500 shrink-0">Buku:</span>
+                                <span className="font-semibold text-slate-700 text-right">{selectedLoan.book_title ?? "-"}</span>
                             </div>
 
                             <div className="flex justify-between">
@@ -442,7 +470,7 @@ export default function KelolaPinjaman() {
                                 <div className="flex gap-3 justify-end">
                                     <Button 
                                         onClick={() => setIsDialogOpen(false)} 
-                                        className="h-10 rounded-xl bg-red-600 px-8 font-bold text-white hover:bg-red-700"
+                                        className="h-10 rounded-xl bg-red-600 px-8 font-bold text-white hover:bg-red-700 hover:cursor-pointer"
                                     >
                                         Tutup
                                     </Button>
@@ -473,7 +501,7 @@ export default function KelolaPinjaman() {
                                     <div className="flex gap-3 justify-end">
                                         <Button 
                                             onClick={() => setIsDialogOpen(false)} 
-                                            className="h-10 rounded-xl bg-red-600 px-8 font-bold text-white hover:bg-red-700"
+                                            className="h-10 rounded-xl bg-red-600 px-8 font-bold text-white hover:bg-red-700 hover:cursor-pointer"
                                         >
                                             Tutup
                                         </Button>
@@ -489,8 +517,8 @@ export default function KelolaPinjaman() {
                                         </Button>
                                     </div>
                                     {!canExtendLoan && (
-                                        <p className="text-xs text-slate-500 text-right">
-                                            Perpanjang hanya tersedia untuk peminjaman berstatus Dipinjam dan belum pernah diperpanjang.
+                                        <p className="text-xs text-slate-500 text-left">
+                                            * Perpanjang hanya tersedia untuk peminjaman berstatus Dipinjam dan belum pernah diperpanjang.
                                         </p>
                                     )}
                                 </div>
