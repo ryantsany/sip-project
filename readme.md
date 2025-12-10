@@ -84,11 +84,18 @@ This provisions:
    php artisan storage:link
    ```
 
+4. Run schedule worker in a separate terminal (optional):
+
+   ```cmd
+   php artisan schedule:work
+   ```
+
 ### Daily commands
 
 | Action                 | Command                                          |
 | ---------------------- | ------------------------------------------------ |
 | Serve API              | `php artisan serve`                              |
+| Run schedule           | `php artisan schedule:work`                      |
 | Re-run seeds           | `php artisan db:seed --class=ClassName`          |
 | Run tests              | `composer test` (alias for `php artisan test`)   |
 | Format/lint (optional) | `vendor\bin\pint` / `vendor\bin\phpstan analyse` |
