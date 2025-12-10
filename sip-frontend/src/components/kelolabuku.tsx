@@ -425,6 +425,7 @@ export default function KelolaBuku() {
                                         <th className="p-6 font-bold text-slate-700">Penulis</th>
                                         <th className="p-6 font-bold text-slate-700">ISBN</th>
                                         <th className="p-6 font-bold text-slate-700">Stok Tersedia</th>
+                                        <th className="p-6 font-bold text-slate-700">Total Buku</th>
                                         <th className="p-6 font-bold text-slate-700 text-center">Aksi</th>
                                     </tr>
                                 </thead>
@@ -448,6 +449,7 @@ export default function KelolaBuku() {
                                                 <td className="p-6 text-slate-600">{book.penulis}</td>
                                                 <td className="p-6 text-slate-600">{book.isbn}</td>
                                                 <td className="p-6 text-slate-600 pl-10">{book.stok}</td>
+                                                <td className="p-6 text-slate-600 pl-10">{book.jumlah}</td>
                                                 <td className="p-6 text-center">
                                                     <div className="flex justify-center gap-4">
                                                         {/* --- TOMBOL EDIT --- */}

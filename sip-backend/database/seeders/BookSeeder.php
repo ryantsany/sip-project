@@ -323,9 +323,12 @@ class BookSeeder extends Seeder
             $bookData['category_id'] = $categoryId;
             $bookData['slug'] = $slug;
 
+            // Synchronize stock with total amount initially
+            $bookData['stok'] = $bookData['jumlah'];
+            $bookData['status'] = $bookData['stok'] > 0 ? 'available' : 'unavailable';
+
             $finalBooks[] = $bookData;
             Book::create($bookData);
         }
     }
 }
-

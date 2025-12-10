@@ -77,6 +77,7 @@ class ManageBorrowingController extends Controller
 
         $borrowing->status = 'Dipinjam';
         $borrowing->due_date = Carbon::parse($borrowing->borrow_date)->addDays(7)->format('Y-m-d');
+        $borrowing->book()->decrement('stok');
         $borrowing->save();
 
         return ResponseFormatter::success($borrowing->api_response, 'Peminjaman berhasil disetujui.');

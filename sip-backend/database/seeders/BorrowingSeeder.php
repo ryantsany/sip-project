@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Book;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class BorrowingSeeder extends Seeder
 {
@@ -114,8 +115,10 @@ class BorrowingSeeder extends Seeder
         foreach ($borrowingsData as $data) {
             $userIndex = $data['user_index'] % $users->count();
             $bookIndex = $data['book_index'] % $books->count();
+            $borrowId = Str::uuid();
 
             Borrowing::create([
+                'id' => $borrowId,
                 'user_id' => $users[$userIndex]->id,
                 'book_id' => $books[$bookIndex]->id,
                 'borrow_date' => $data['borrow_date']->format('Y-m-d'),
@@ -125,6 +128,18 @@ class BorrowingSeeder extends Seeder
                 'denda' => $data['denda'],
                 'notes' => $data['notes'],
             ]);
+
+            // Update book stock if currently borrowed
+            if (in_array($data['status'], ['Dipinjam', 'Terlambat', 'Tenggat'])) {
+                $book = $books[$bookIndex];
+                if ($book->stok > 0) {
+                    $book->stok -= 1;
+                    if ($book->stok === 0) {
+                        $book->status = 'unavailable';
+                    }
+                    $book->save();
+                }
+            }
         }
 
         $this->command->info('Borrowings seeded successfully: ' . count($borrowingsData) . ' records created.');
