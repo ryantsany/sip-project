@@ -167,6 +167,18 @@ export interface AdminDashBorrowRecord {
   notes?: string | null;
 }
 
+export interface MonthlyBorrowingStat {
+  month: string;
+  count: number;
+}
+
+export interface TopBook {
+  id: string;
+  title: string;
+  author: string;
+  count: number;
+}
+
 export interface AdminDashboardData {
   total_books: number;
   total_borrowings: number;
@@ -179,6 +191,8 @@ export interface AdminDashboardData {
   books_overdue_this_month: number;
   pending_borrowings: AdminDashBorrowRecord[];
   late_borrowings: AdminDashBorrowRecord[];
+  monthly_stats: MonthlyBorrowingStat[];
+  top_books: TopBook[];
 }
 
 export type AdminDashboardResponse = ApiResponse<AdminDashboardData>;
