@@ -68,6 +68,16 @@ class BorrowingSeeder extends Seeder
                 'denda' => 15000,
                 'notes' => 'Terlambat 6 hari',
             ],
+            [
+                'user_index' => 2,
+                'book_index' => 3,
+                'borrow_date' => Carbon::now()->subDays(15),
+                'due_date' => Carbon::now()->subDays(1),
+                'return_date' => null,
+                'status' => 'Terlambat',
+                'denda' => 15000,
+                'notes' => 'Terlambat 1 hari',
+            ],
             // Returned borrowings
             [
                 'user_index' => 0,
