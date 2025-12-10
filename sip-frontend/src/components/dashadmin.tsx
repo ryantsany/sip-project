@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useEffect, useState } from "react";
 import { http } from "@/lib/http";
 import Sidebar from "@/components/sidebar";
@@ -8,11 +7,43 @@ import { useAuth } from "@/context/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminDashboardData, AdminDashboardResponse } from "@/types/api";
 import StatCard from "./stat-card";
+import { Banana, ClockAlert, Library } from "lucide-react";
 
 export default function DashAdmin() {
   const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
+  const [currentDate, setCurrentDate] = useState("");
+  
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      
+      const datePart = now.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    
+      const dayPart = now.toLocaleDateString("id-ID", {
+        weekday: "long",
+      });
+
+      const timePart = now.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).replace(":", ".");
+
+      setCurrentDate(`${datePart} | ${dayPart}, ${timePart} WIB`);
+    };
+
+    updateClock(); 
+    const timer = setInterval(updateClock, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const pendingBorrowings = dashboardData?.pending_borrowings ?? [];
   const lateBorrowings = dashboardData?.late_borrowings ?? [];
 
@@ -41,17 +72,20 @@ export default function DashAdmin() {
         <header className="flex justify-between items-start mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-700 mb-1">
-              Selamat datang kembali,
-            </h1>
+              Halo,
             {loading ? (
               <Skeleton className="h-9 w-48 mt-2" />
             ) : (
-              <h1 className="text-3xl font-bold text-slate-700">
-                {user?.nama ? user.nama.split(' ')[0] : "User"}!
-              </h1>
+              <span className="text-3xl font-bold text-blue-500">
+                {user?.nama ? ` ${user.nama.split(' ')[0]}` : "User"}!
+              </span>
             )}
-            <p className="text-gray-500">Ringkasan kegiatan perpustakaan.</p>
+            </h1>
+            <p className="text-slate-500">Selamat datang di dashboard admin perpustakaan.</p>
           </div>
+            <h2 className="text-slate-500 text-lg mt-1 font-medium">
+              {currentDate || <Skeleton className="h-7 w-64" />}
+            </h2>
         </header>
 
         {/* Stats Cards */}
@@ -65,9 +99,9 @@ export default function DashAdmin() {
               </>
             ) : (
               <>
-                <StatCard index={0} label="Total Buku" value={dashboardData?.total_books} growth={dashboardData?.books_added_this_month}  />
-                <StatCard index={1} label="Buku Terpinjam" value={dashboardData?.total_borrowings} growth={dashboardData?.books_borrowed_this_month}  />
-                <StatCard index={2} label="Buku Belum Dikembalikan" value={dashboardData?.total_overdue} growth={dashboardData?.books_overdue_this_month} />
+                <StatCard icon={<Library size={32} className="text-white bg-blue-400 rounded-full p-1" />} index={0} label="Total Buku" subLabel="buku di koleksi" value={dashboardData?.total_books} growth={dashboardData?.books_added_this_month}  />
+                <StatCard icon={<Banana size={32} className="text-white bg-blue-400 rounded-full p-1" />} index={0} label="Dipinjam" subLabel="buku dipinjam" value={dashboardData?.total_borrowings} growth={dashboardData?.books_borrowed_this_month}  />
+                <StatCard icon={<ClockAlert size={32} className="text-white bg-blue-400 rounded-full p-1" />} index={2} label="Belum Dikembalikan" subLabel="buku terlambat" value={dashboardData?.total_overdue} growth={dashboardData?.books_overdue_this_month} />
               </>
             )
           }
@@ -77,12 +111,14 @@ export default function DashAdmin() {
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Tabel Kiri */}
             <div>
-                <h3 className="text-xl font-bold text-slate-800 mb-4">Butuh diproses</h3>
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div className="flex flex-row mb-2">
+                      <h3 className="text-xl font-bold text-slate-700">Butuh diproses</h3>
+                    </div>
                     <table className="w-full text-left">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                <th className="p-5 text-slate-700 font-bold">Judul Buku</th>
+                                <th className=" text-slate-700 font-bold">Judul Buku</th>
                                 <th className="p-5 text-slate-700 font-bold text-center">Nama</th>
                                 <th className="p-5 text-slate-700 font-bold text-center">Status</th>
                             </tr>
@@ -98,7 +134,7 @@ export default function DashAdmin() {
                             ) : pendingBorrowings.length ? (
                               pendingBorrowings.map((book, idx) => (
                                 <tr key={idx} className="border-b border-gray-50 last:border-none">
-                                    <td className="p-5 font-medium text-slate-700">{book.book_title}</td>
+                                    <td className="font-medium text-slate-700">{book.book_title}</td>
                                     <td className="p-5 text-center text-slate-600 font-medium">
                                         {book.peminjam}
                                     </td>
@@ -121,37 +157,44 @@ export default function DashAdmin() {
 
             {/* Tabel Kanan */}
             <div>
-                <h3 className="text-xl font-bold text-slate-800 mb-4">Buku terlambat</h3>
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div className="flex flex-row mb-2">
+                      <h3 className="text-xl font-bold text-slate-800">Buku terlambat</h3>
+                    </div>
                     <table className="w-full text-left">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                <th className="p-5 text-slate-700 font-bold">Judul Buku</th>
+                                <th className="text-slate-700 font-bold">Judul Buku</th>
                                 <th className="p-5 text-slate-700 font-bold text-center">Nama</th>
                                 <th className="p-5 text-slate-700 font-bold text-center">Status</th>
+                                <th className="p-5 text-slate-700 font-bold text-center">Denda</th>
                             </tr>
                         </thead>
                         <tbody>
                             {isLoading ? (
                               Array.from({ length: 3 }).map((_, idx) => (
                                 <tr key={`late-skeleton-${idx}`} className="border-b border-gray-50 last:border-none">
-                                  <td className="p-5"><Skeleton className="h-5 w-48" /></td>
+                                  <td className=""><Skeleton className="h-5 w-48" /></td>
                                   <td className="p-5"><Skeleton className="h-6 w-28 mx-auto rounded-full" /></td>
                                   <td className="p-5"><Skeleton className="h-5 w-32 mx-auto" /></td>
+                                  <td className="p-5"><Skeleton className="h-5 w-20 mx-auto" /></td>
                                 </tr>
                               ))
                             ) : lateBorrowings.length ? (
                               lateBorrowings.map((book, idx) => (
                                 <tr key={`late-${idx}`} className="border-b border-gray-50 last:border-none">
-                                    <td className="p-5 font-medium text-slate-700">{book.book_title}</td>
+                                    <td className="font-medium text-slate-700">{book.book_title}</td>
+                                    <td className="p-5 text-center text-slate-600 font-medium">
+                                        {book.peminjam}
+                                    </td>
                                     <td className="p-5 text-center">
                                         <span className="bg-[#F87171] text-white px-4 py-1 rounded-full font-bold text-xs whitespace-nowrap">
                                             {book.status}
                                         </span>
-                                    </td>
-                                    <td className="p-5 text-center text-slate-600 font-medium">
-                                        {book.peminjam}
-                                    </td>
+                                    </td>   
+                                    <td className="p-5 text-center text-slate-700">
+                                        Rp {book.denda?.toLocaleString('id-ID')}
+                                    </td>                         
                                 </tr>
                               ))
                             ) : (
