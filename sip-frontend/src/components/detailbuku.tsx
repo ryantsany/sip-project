@@ -121,7 +121,7 @@ export default function DetailBuku() {
         } catch (error) {
             console.error("Failed to borrow book:", error);
             setFetchError("Gagal meminjam buku.");
-            toast.error("Terjadi kesalahan saat meminjam buku. Coba lagi nanti.");
+            toast.error(error instanceof Error ? error.message : "Gagal meminjam buku.");
         } finally {
             setIsLoadingBorrow(false);
         }

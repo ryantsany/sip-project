@@ -12,6 +12,14 @@ class BorrowController extends Controller
 {
     public function borrowBook(Request $request)
     {
+        $countUserBorrowings = Borrowing::where('user_id', $request->user()->id)
+            ->whereIn('status', ['Pending', 'Dipinjam', 'Terlambat'])
+            ->count();
+
+        if ($countUserBorrowings >= 3) {
+            return ResponseFormatter::error(400, null, 'Anda telah mencapai batas maksimal peminjaman buku (3 buku sekaligus). Silahkan kembalikan buku yang sedang dipinjam sebelum meminjam buku lain.');
+        }
+
         $validated = $request->validate([
             'book_slug' => 'required|string|exists:books,slug',
             'borrow_date' => 'required|date',
