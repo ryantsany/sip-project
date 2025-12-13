@@ -4,7 +4,7 @@ services:
     container_name: mysql_db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: bahlil212
+      MYSQL_ROOT_PASSWORD: sip-project@131
       MYSQL_DATABASE: sip_backend
     ports:
       - "3306:3306"
@@ -25,9 +25,9 @@ services:
     environment:
       PMA_HOST: mysql_db
       PMA_USER: root
-      PMA_PASSWORD: bahlil212
+      PMA_PASSWORD: sip-project@131
     ports:
-      - "6969:80"
+      - "7070:80"
 
 volumes:
   mysql_data:

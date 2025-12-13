@@ -45,8 +45,8 @@ docker compose up -d
 
 This provisions:
 
-- `mysql_db` on `localhost:3306` (database `sip_backend`, root password `bahlil212`).
-- `phpMyAdmin` on http://localhost:6969 for quick inspection.
+- `mysql_db` on `localhost:3306`.
+- `phpMyAdmin` on http://localhost:7070 for quick inspection.
 
 > Bring services down with `docker compose down` when finished.
 
