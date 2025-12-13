@@ -24,10 +24,12 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Prepare environment
+        working-directory: ./sip-backend
         run: |
           cp .env.testing.example .env.testing
           php artisan key:generate --env=testing
           php artisan config:clear
 
-      - name: Run tests
+      - name: Run Backend tests
+        working-directory: ./sip-backend
         run: php artisan test
