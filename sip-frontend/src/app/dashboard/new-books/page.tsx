@@ -64,7 +64,7 @@ export default function NewBooksPage() {
         (book) =>
           book.judul.toLowerCase().includes(query) ||
           book.penulis?.toLowerCase().includes(query) ||
-          book.kategori.toLowerCase().includes(query)
+          book.category?.name?.toLowerCase().includes(query)
       );
     }
 
@@ -267,7 +267,7 @@ function BookCard({ book, isNew }: { book: BookSummary; isNew?: boolean }) {
         {/* Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
           <span className="bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-1 rounded-full text-slate-800 uppercase tracking-wide">
-            {book.kategori}
+            {book.category?.name}
           </span>
           {isNew && (
             <span className="flex items-center gap-1 bg-amber-400 text-[10px] font-bold px-2 py-1 rounded-full text-amber-900 uppercase tracking-wide">
