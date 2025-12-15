@@ -10,11 +10,14 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - sip_network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
       interval: 10s
       timeout: 5s
       retries: 5
+
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5
     container_name: phpmyadmin
@@ -28,7 +31,63 @@ services:
       PMA_PASSWORD: sip-project@131
     ports:
       - "7070:80"
+    networks:
+      - sip_network
+
+  backend:
+    build:
+      context: ./sip-backend
+      dockerfile: Dockerfile
+    container_name: sip_backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_NAME: "SIP Project"
+      APP_ENV: local
+      APP_KEY: "base64:YOUR_GENERATED_KEY_HERE"
+      APP_DEBUG: "true"
+      APP_URL: "http://localhost:8000"
+      
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: sip_backend
+      DB_USERNAME: root
+      DB_PASSWORD: sip-project@131
+      
+      BROADCAST_CONNECTION: log
+      FILESYSTEM_DISK: public
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: database
+      SESSION_LIFETIME: 120
+    ports:
+      - "8000:80"
+    volumes:
+      - ./sip-backend/storage/app/public:/var/www/html/storage/app/public
+    networks:
+      - sip_network
+
+  frontend:
+    build:
+      context: ./sip-frontend
+      dockerfile: Dockerfile
+    container_name: sip_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: "http://localhost:8000/api"
+    ports:
+      - "3000:3000"
+    networks:
+      - sip_network
 
 volumes:
   mysql_data:
     driver: local
+
+networks:
+  sip_network:
+    driver: bridge
