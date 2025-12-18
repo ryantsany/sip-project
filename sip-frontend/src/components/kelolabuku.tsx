@@ -370,6 +370,7 @@ export default function KelolaBuku() {
                                             <label className="font-bold text-slate-700 text-sm">Kategori</label>
                                             <div className="relative">
                                                 <select name="category_id" value={formData.category_id} onChange={handleInputChange} className="w-full appearance-none rounded-full border border-slate-400 bg-transparent h-10 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+                                                    <option value="" disabled>Pilih kategori</option>
                                                     {categories.map((cat) => (
                                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                                                     ))}
