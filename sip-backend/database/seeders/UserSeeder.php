@@ -14,6 +14,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $nama = ['Andi Putra', 'Budi Arie', 'Citra Ayu', 'Dewi Siska', 'Agastya Suryana', 'Fajar Alfian', 'Gita Gutama', 'Hadi Diningrat', 'Intan Naurah', 'Pribadi Bagus', 'Rina Melati', 'Adhitya Hendarno'];
         User::create([
             'nomor_induk' => '1814320001',
             'nama' => 'Admin',
@@ -24,15 +25,15 @@ class UserSeeder extends Seeder
 
         User::create([
             'nomor_induk' => '1313600001',
-            'nama' => 'User 1',
+            'nama' => 'Heru Budi',
             'role' => 'siswa',
             'first_login' => true,
         ]);
 
-        for ($it = 1; $it <= 10; $it++) {
+        for ($it = 1; $it <= 12; $it++) {
             User::create([
                 'nomor_induk' => '131360000' . ($it + 1),
-                'nama' => 'User' . $it,
+                'nama' => $nama[$it - 1],
                 'role' => 'siswa',
                 'password' => Hash::make('password123'),
                 'first_login' => false,
@@ -41,7 +42,7 @@ class UserSeeder extends Seeder
 
         User::create([
             'nomor_induk' => '1313600015',
-            'nama' => 'Wowo',
+            'nama' => 'Teddy Santoso',
             'role' => 'siswa',
             'first_login' => true,
         ]);
