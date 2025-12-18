@@ -20,7 +20,7 @@ return [
     'allowed_methods' => ['*'],
 
     // 'allowed_origins' => ['http://127.0.0.1:3000', 'http://localhost:3000'],
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['https://sipp.eatzy.web.id', 'http://localhost:3000'],
 
     'allowed_origins_patterns' => [],
 
