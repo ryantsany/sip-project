@@ -35,7 +35,7 @@ export default function KelolaPinjaman() {
     const [borrowings, setBorrowings] = useState<ManageBorrowingRecord[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedLoan, setSelectedLoan] = useState<ManageBorrowingRecord | null>(null);
-    const [actionState, setActionState] = useState<{ type: 'accept' | 'extend' | 'return' | null; id: string | null }>({
+    const [actionState, setActionState] = useState<{ type: 'accept' | 'extend' | 'return' | 'reject' | null; id: string | null }>({
         type: null,
         id: null,
     });
@@ -503,9 +503,20 @@ export default function KelolaPinjaman() {
                                 <div className="flex gap-3 justify-end">
                                     <Button 
                                         onClick={() => setIsDialogOpen(false)} 
-                                        className="h-10 rounded-xl bg-red-600 px-8 font-bold text-white hover:bg-red-700 hover:cursor-pointer"
+                                        className="h-10 rounded-xl bg-gray-200 px-8 font-bold text-slate-700 hover:bg-gray-300 hover:cursor-pointer"
                                     >
                                         Tutup
+                                    </Button>
+                                    <Button 
+                                        disabled={isActionLoading}
+                                        className="bg-red-600 hover:bg-red-700 rounded-xl text-white font-bold px-6 h-10 flex items-center justify-center gap-2 disabled:opacity-60"
+                                    >
+                                        {actionState.type === "reject" ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <X className="h-4 w-4" />
+                                        )}
+                                        Tolak
                                     </Button>
                                     <Button 
                                         onClick={handleApprove} 
@@ -517,7 +528,7 @@ export default function KelolaPinjaman() {
                                         ) : (
                                             <CheckSquare className="h-4 w-4" />
                                         )}
-                                        Setujui Peminjaman
+                                        Setujui
                                     </Button>
                                 </div>
                             ) : activeTab === "dikembalikan" ? (<></>) : activeTab === "terlambat" ? (
