@@ -117,6 +117,18 @@ export default function Sidebar() {
                 Dashboard
               </Button>
             </Link>
+            <Link href="/admin/kelolabuku" className="block">
+              <Button variant="ghost" className={getLinkClass("/admin/kelolabuku")}>
+                <BookOpen size={20} />
+                Kelola Buku
+              </Button>
+            </Link>
+            <Link href="/admin/kelolakategori" className="block">
+              <Button variant="ghost" className={getLinkClass("/admin/kelolakategori")}>
+                <GalleryVerticalEnd size={20} />
+                Kelola Kategori
+              </Button>
+            </Link>
             <Link href="/admin/kelolapinjaman" className="block">
               <Button variant="ghost" className={getLinkClass("/admin/kelolapinjaman")}>
                 <Search size={20} />
