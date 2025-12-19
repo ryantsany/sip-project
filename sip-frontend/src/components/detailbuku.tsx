@@ -38,6 +38,7 @@ import {
 import { BookSummary, BookSummaryResponse, BorrowCreateResponse } from "@/types/api";
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
+import NotificationDropdown from "./notifikasi";
 
 const FALLBACK_COVER = "/bluebox17.jpeg";
 const FALLBACK_TITLE = "Detail Buku";
@@ -142,14 +143,14 @@ export default function DetailBuku() {
             
             {/* --- HEADER --- */}
             <header className="flex justify-between items-start mb-8">
-            <div>
-                <h1 className="text-3xl font-bold text-slate-700">
-                {bookSummary?.judul}
-                </h1>
-            </div>
-            <div className="cursor-pointer p-2 rounded-full transition-colors text-blue-600 hover:bg-blue-100 hover:text-black">
-                <Bell size={34} className="fill-current" />
-            </div>
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-700">
+                        {bookSummary?.judul}
+                    </h1>
+                </div>
+                <div className="cursor-pointer p-2 rounded-full transition-colors text-blue-600 hover:bg-blue-100 hover:text-black">
+                    <NotificationDropdown />
+                </div>
             </header>
 
             {/* --- BREADCRUMB --- */}

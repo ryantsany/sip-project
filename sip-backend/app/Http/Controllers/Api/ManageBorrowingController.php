@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Borrowing;
+use App\Models\Notification;
 use App\ResponseFormatter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -60,6 +61,14 @@ class ManageBorrowingController extends Controller
         $borrowing->due_date = $currentDueDate->addDays(7)->format('Y-m-d');
         $borrowing->save();
 
+        Notification::create([
+            'user_id' => $borrowing->user_id,
+            'tipe' => 'success',
+            'judul' => 'Perpanjangan Peminjaman Berhasil',
+            'pesan' => 'Peminjaman buku "' . optional($borrowing->book)->judul . '" telah diperpanjang 1 minggu. Harap kembalikan tepat waktu.',
+            'is_read' => false,
+        ]);
+
         return ResponseFormatter::success($borrowing->api_response, 'Tenggat diperpanjang 1 minggu.');
     }
 
@@ -80,6 +89,14 @@ class ManageBorrowingController extends Controller
         $borrowing->book()->decrement('stok');
         $borrowing->save();
 
+        Notification::create([
+            'user_id' => $borrowing->user_id,
+            'tipe' => 'success',
+            'judul' => 'Peminjaman Disetujui',
+            'pesan' => 'Peminjaman buku "' . optional($borrowing->book)->judul . '" telah disetujui oleh admin. Silahkan ambil bukunya di perpustakaan.',
+            'is_read' => false,
+        ]);
+
         return ResponseFormatter::success($borrowing->api_response, 'Peminjaman berhasil disetujui.');
     }
 
@@ -97,6 +114,14 @@ class ManageBorrowingController extends Controller
         $borrowing->book()->increment('stok');
         $borrowing->save();
 
+        Notification::create([
+            'user_id' => $borrowing->user_id,
+            'tipe' => 'success',
+            'judul' => 'Buku Dikembalikan',
+            'pesan' => 'Anda telah mengembalikan buku "' . optional($borrowing->book)->judul . '". Terima kasih!',
+            'is_read' => false,
+        ]);
+
         return ResponseFormatter::success($borrowing->api_response, 'Buku telah dikembalikan.');
     }
 
@@ -111,6 +136,14 @@ class ManageBorrowingController extends Controller
 
         $borrowing->status = 'Ditolak';
         $borrowing->save();
+
+        Notification::create([
+            'user_id' => $borrowing->user_id,
+            'tipe' => 'info',
+            'judul' => 'Peminjaman Buku Ditolak',
+            'pesan' => 'Peminjaman buku "' . optional($borrowing->book)->judul . '" telah ditolak oleh admin. Silahkan datang ke perpustakaan untuk informasi lebih lanjut.',
+            'is_read' => false,
+        ]);
 
         return ResponseFormatter::success($borrowing->api_response, 'Peminjaman telah ditolak.');
     }

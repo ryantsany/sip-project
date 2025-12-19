@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Borrowing;
+use App\Models\Notification;
 use App\ResponseFormatter;
 use Illuminate\Http\Request;
 
@@ -33,6 +34,14 @@ class BorrowController extends Controller
             'borrow_date' => $validated['borrow_date'],
             'due_date' => date('Y-m-d', strtotime($validated['borrow_date'] . ' + 7 days')),
             'status' => 'Pending',
+        ]);
+
+        Notification::create([
+            'user_id' => $request->user()->id,
+            'tipe' => 'info',
+            'judul' => 'Peminjaman Buku Diajukan',
+            'pesan' => 'Anda telah mengajukan peminjaman buku "' . $book->judul . '". Silahkan tunggu konfirmasi dari admin.',
+            'is_read' => false,
         ]);
 
         return ResponseFormatter::success($borrowing->api_response, 'Berhasil meminjam buku');
