@@ -132,7 +132,7 @@ export default function RiwayatPinjam() {
         {/* --- FILTER TABS --- */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <span className="font-bold text-slate-700 mr-2">Status:</span>
-          {["Semua","Pending", "Dipinjam", "Dikembalikan", "Tenggat", "Terlambat"].map(
+          {["Semua","Pending", "Dipinjam", "Dikembalikan", "Tenggat", "Terlambat", "Ditolak"].map(
             (filter) => (
               <button
                 key={filter}
@@ -311,6 +311,9 @@ function StatusBadge({ status }: { status: string }) {
       break;
     case "Terlambat":
       styleClass = "bg-red-100 text-red-700 border border-red-200";
+      break;
+    case "Ditolak":
+      styleClass = "bg-gray-200 text-gray-500 border border-gray-300";
       break;
   }
 
