@@ -89,7 +89,7 @@ export default function DashAdmin() {
   return (
     <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
       
-      <Sidebar role="admin" />
+      <Sidebar />
 
       <main className="flex-1 md:ml-64 p-8 overflow-y-auto">
         {/* Header */}

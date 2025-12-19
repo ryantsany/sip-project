@@ -229,7 +229,7 @@ export default function KelolaUser() {
   return (
     <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
       <Toaster position="top-center" />
-      <Sidebar role="admin" />
+      <Sidebar />
 
       <main className="flex-1 md:ml-64 p-8 overflow-y-auto">
         <header className="flex justify-between items-center mb-8">
