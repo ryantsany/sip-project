@@ -171,22 +171,38 @@ export default function KelolaUser() {
   };
 
   const handleDelete = async (nomorInduk: string) => {
-    const confirmed = window.confirm("Yakin ingin menghapus user ini?");
-    if (!confirmed) return;
+    const user = users.find((item) => item.nomorInduk === nomorInduk);
+    const label = user?.nama ? `${user.nama} (${nomorInduk})` : nomorInduk;
 
-    try {
-      setIsDeletingNomorInduk(nomorInduk);
-      await http.delete(`/delete-user/${nomorInduk}`);
-      toast.success("User berhasil dihapus.");
-      const payload = await loadUsers(currentPage, searchQuery);
-      hydrateUsers(payload);
-      setError(null);
-    } catch (err) {
-      console.error("Failed to delete user:", err);
-      toast.error("Gagal menghapus user.");
-    } finally {
-      setIsDeletingNomorInduk(null);
-    }
+    toast("Hapus akun ini?", {
+      description: `Akun atas nama ${label} akan dihapus permanen.`,
+      className: "!bg-white !text-slate-900 !border-slate-200",
+      duration: 10000,
+      action: {
+        label: "Hapus",
+        onClick: async () => {
+          try {
+            setIsDeletingNomorInduk(nomorInduk);
+            await http.delete(`/delete-user/${nomorInduk}`);
+            toast.success("Akun berhasil dihapus", {
+              description: `Akun atas nama ${label} berhasil dihapus.`,
+              className: "!bg-white !text-slate-900 !border-slate-200",
+            });
+            const payload = await loadUsers(currentPage, searchQuery);
+            hydrateUsers(payload);
+            setError(null);
+          } catch (err) {
+            console.error("Failed to delete user:", err);
+            toast.error("Gagal menghapus user", {
+              description: "Terjadi kesalahan saat menghapus user.",
+              className: "!bg-white !text-slate-900 !border-slate-200",
+            });
+          } finally {
+            setIsDeletingNomorInduk(null);
+          }
+        },
+      },
+    });
   };
 
   const handleSave = async () => {
