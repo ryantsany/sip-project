@@ -66,6 +66,7 @@ export default function RiwayatPinjam() {
         description: "Sudah pernah memperpanjang atau terjadi kesalahan.",
         className: "!bg-white !text-slate-900 !border-slate-200",
       });
+      console.error("Extend failed:", error);
     } finally {
       setActionState({ type: null, id: null });
       setIsExtendDialogOpen(false);
@@ -225,9 +226,9 @@ export default function RiwayatPinjam() {
                           {item.book_title}
                         </span>
                       </td>
-                      <td className="p-6 text-center text-slate-500">{formatDateDisplay(item.borrow_date)}</td>
-                      <td className="p-6 text-center text-slate-500">{formatDateDisplay(item.due_date)}</td>
-                      <td className="p-6 text-center text-slate-500">{formatDateDisplay(item.return_date)}</td>
+                      <td className="p-6 text-center text-slate-500">{item.status === "Ditolak" ? "-" : formatDateDisplay(item.borrow_date)}</td>
+                      <td className="p-6 text-center text-slate-500">{item.status === "Ditolak" ? "-" : formatDateDisplay(item.due_date)}</td>
+                      <td className="p-6 text-center text-slate-500">{item.status === "Ditolak" ? "-" : formatDateDisplay(item.return_date)}</td>
                       <td className="p-6 text-center">
                         <StatusBadge status={item.status} />
                       </td>

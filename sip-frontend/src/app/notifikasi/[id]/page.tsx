@@ -40,7 +40,6 @@ export default function NotificationDetailPage() {
         
         // Mark as read when viewing detail if not already read
         if (response.data.is_read === 0) {
-             // Fire and forget or await? Await to ensure state consistency if we were to refetch
              await http.post(`/notifications/${id}/mark-as-read`, {});
              setNotification(prev => prev ? { ...prev, is_read: 1 } : null);
         }
@@ -64,6 +63,7 @@ export default function NotificationDetailPage() {
         timeStyle: "short",
       });
     } catch (err) {
+      console.error("Error formatting date:", err);
       return timestamp;
     }
   };

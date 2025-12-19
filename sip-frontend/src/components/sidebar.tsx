@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,12 +19,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-// Definisikan tipe props
-interface SidebarProps {
-  role?: "siswa" | "admin"; 
-}
-
-export default function Sidebar({ role = "siswa" }: SidebarProps) {
+export default function Sidebar() {
   const pathname = usePathname();
   const { user, loading, logout } = useAuth();
 

@@ -241,7 +241,6 @@ function BookCardSkeleton() {
 function BookCard({ book, isNew }: { book: BookSummary; isNew?: boolean }) {
   const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
   const ASSET_BASE = API_BASE?.replace(/\/api\/?$/, "");
-  const isAvailable = book.status === "available" || Number(book.stok) > 0;
 
   return (
     <Link href={`/detailbuku?buku=${book.slug}`} className="block h-full">

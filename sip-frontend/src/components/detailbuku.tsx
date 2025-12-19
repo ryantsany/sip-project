@@ -6,7 +6,7 @@ import { http } from "@/lib/http";
 import { format } from "date-fns";
 import { id } from "date-fns/locale"; 
 import { cn } from "@/lib/utils"; 
-import { Bell, Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,14 +37,12 @@ import {
 } from "@/components/ui/popover";
 import { BookSummary, BookSummaryResponse, BorrowCreateResponse } from "@/types/api";
 import { toast } from "sonner";
-import { useAuth } from "@/context/auth-context";
 import NotificationDropdown from "./notifikasi";
 
 const FALLBACK_COVER = "/bluebox17.jpeg";
 const FALLBACK_TITLE = "Detail Buku";
 
 export default function DetailBuku() {
-    const {user, loading} = useAuth();
     // STATE FOR DATE PICKER (Default to today)
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [bookSummary, setBookSummary] = useState<BookSummary | null>(null);
