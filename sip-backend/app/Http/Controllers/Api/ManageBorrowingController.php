@@ -99,4 +99,19 @@ class ManageBorrowingController extends Controller
 
         return ResponseFormatter::success($borrowing->api_response, 'Buku telah dikembalikan.');
     }
+
+    public function rejectBorrowing($id)
+    {
+        $borrowing = Borrowing::findOrFail($id);
+        $borrowing->loadMissing('book');
+
+        if ($borrowing->status !== 'Pending') {
+            return ResponseFormatter::error(400, null, 'Hanya pengajuan berstatus pending yang dapat ditolak.');
+        }
+
+        $borrowing->status = 'Ditolak';
+        $borrowing->save();
+
+        return ResponseFormatter::success($borrowing->api_response, 'Peminjaman telah ditolak.');
+    }
 }

@@ -1,8 +1,22 @@
 "use client";
 
-import {Library} from "lucide-react"
+import type { ReactNode } from "react";
 
-export default function StatCard({ icon, index, label, subLabel, value, growth }: { icon: any,index: number; label: string; subLabel: string; value: number | null | undefined; growth: number | null | undefined }) {
+export default function StatCard({
+  icon,
+  index,
+  label,
+  subLabel,
+  value,
+  growth,
+}: {
+  icon: ReactNode;
+  index: number;
+  label: string;
+  subLabel: string;
+  value: number | null | undefined;
+  growth: number | null | undefined;
+}) {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-min-content">
         <div className="flex flex-row items-center gap-3 mb-2">

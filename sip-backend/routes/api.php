@@ -15,9 +15,9 @@ Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
     Route::put('/update-user/{nomor_induk}', [App\Http\Controllers\Api\ManageUserController::class, 'updateUser']);
 
     Route::get('/borrowings', [App\Http\Controllers\Api\ManageBorrowingController::class, 'getAllBorrowings']);
-    Route::post('/borrowings/{borrowing}/extend', [App\Http\Controllers\Api\ManageBorrowingController::class, 'extendBorrow']);
     Route::post('/borrowings/{borrowing}/accept', [App\Http\Controllers\Api\ManageBorrowingController::class, 'adminAcceptBorrow']);
     Route::post('/borrowings/{id}/return', [App\Http\Controllers\Api\ManageBorrowingController::class, 'returnBook']);
+    Route::post('/borrowings/{id}/reject', [App\Http\Controllers\Api\ManageBorrowingController::class, 'rejectBorrowing']);
 
     Route::post('/tambah-buku', [App\Http\Controllers\Api\BookController::class, 'addNewBook']);
     Route::post('/edit-buku/{slug}', [App\Http\Controllers\Api\BookController::class, 'editBook']);
@@ -36,6 +36,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/search-books', [App\Http\Controllers\Api\BookController::class, 'searchBooks']);
     Route::get('/books-latest', [App\Http\Controllers\Api\BookController::class, 'getFourLatestBooks']);
     Route::get('/books-all', [App\Http\Controllers\Api\BookController::class, 'getAllBooksForUser']);
+
+    Route::post('/borrowings/{borrowing}/extend', [App\Http\Controllers\Api\ManageBorrowingController::class, 'extendBorrow']);
 
     Route::get('/categories', [App\Http\Controllers\Api\CategoryController::class, 'index']);
     Route::get('/categories/{id}', [App\Http\Controllers\Api\CategoryController::class, 'show']);

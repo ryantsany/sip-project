@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { X, Loader2, Search, } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { X, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar"; 
 import NotificationDropdown from "@/components/notifikasi";
@@ -26,6 +26,22 @@ export default function RiwayatPinjam() {
 
   const [isExtendDialogOpen, setIsExtendDialogOpen] = useState(false);
   const [selectedExtendItem, setSelectedExtendItem] = useState<{ id: string; title: string } | null>(null);
+  const [actionState, setActionState] = useState<{ type: "extend" | null; id: string | null }>({
+    type: null,
+    id: null,
+  });
+
+  const isActionLoading = actionState.type !== null;
+
+  const formatDateDisplay = (dateString?: string | null) => {
+    if (!dateString) return "-";
+    const normalized = dateString.slice(0, 10);
+    const [year, month, day] = normalized.split("-");
+    if (year && month && day) {
+      return `${day}-${month}-${year}`;
+    }
+    return dateString;
+  };
 
   // --- 2. HANDLER MEMBUKA MODAL ---
   const openExtendModal = (id: string, title: string) => {
@@ -33,26 +49,28 @@ export default function RiwayatPinjam() {
     setIsExtendDialogOpen(true);
   };
 
-// --- 3. HANDLER EKSEKUSI PERPANJANG (Saat tombol "Ya" diklik) ---
+  // --- 3. HANDLER EKSEKUSI PERPANJANG ---
   const handleConfirmExtend = async () => {
     if (!selectedExtendItem) return;
 
+    setActionState({ type: "extend", id: selectedExtendItem.id });
     try {
-        // Simulasi API Call (Ganti dengan API asli Anda nanti)
-        // await http.post(`/pinjam-buku/${selectedExtendItem.id}/extend`);
-        
-        toast.success("Berhasil Diperpanjang!", {
-            description: `Masa pinjam buku "${selectedExtendItem.title}" telah diperpanjang.`,
-            className: "!bg-white !text-slate-900 !border-slate-200",
-        });
+      await http.post(`/borrowings/${selectedExtendItem.id}/extend`, {});
 
+      toast.success("Tenggat diperpanjang", {
+        description: "Periode peminjaman bertambah 1 minggu.",
+        className: "!bg-white !text-slate-900 !border-slate-200",
+      });
     } catch (error) {
-        console.error(error);
-        toast.error("Gagal memperpanjang peminjaman.");
+      toast.error("Gagal memperpanjang tenggat", {
+        description: "Sudah pernah memperpanjang atau terjadi kesalahan.",
+        className: "!bg-white !text-slate-900 !border-slate-200",
+      });
     } finally {
-        setIsExtendDialogOpen(false);
-        setSelectedExtendItem(null);
-        fetchBorrowingList(); // Refresh data setelah perpanjangan
+      setActionState({ type: null, id: null });
+      setIsExtendDialogOpen(false);
+      setSelectedExtendItem(null);
+      fetchBorrowingList();
     }
   };
 
@@ -74,31 +92,28 @@ export default function RiwayatPinjam() {
     fetchBorrowingList();
   }, [fetchBorrowingList]);
 
-  const handleExtend = (id: string, title: string) => {
-  // Logika API perpanjangan disini
-  // Contoh: await http.post(`/pinjam-buku/${id}/extend`);
-  
-  // Feedback visual sederhana
-  alert(`Permintaan perpanjangan untuk buku "${title}" berhasil dikirim!`);
-};
+  const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const filteredData = borrowingList.filter((item) => {
-    const matchStatus =
-      activeFilter === "Semua" || item.status === activeFilter;
-    // Search Logic (Judul ATAU Status)
-    const query = searchQuery.toLowerCase();
-    const matchSearch = 
-      item.book_title.toLowerCase().includes(query) || 
-      item.status.toLowerCase().includes(query);
+  const filteredData = useMemo(() => {
+    return borrowingList.filter((item) => {
+      const matchStatus = activeFilter === "Semua" || item.status === activeFilter;
+      if (!normalizedQuery) return matchStatus;
 
-    return matchStatus && matchSearch;
-  });
+      const title = item.book_title?.toLowerCase() ?? "";
+      const status = item.status?.toLowerCase() ?? "";
+      const matchSearch = title.includes(normalizedQuery) || status.includes(normalizedQuery);
 
-  const sortedData = filteredData.sort((a, b) => {
-    const dateA = new Date(a.borrow_date).getTime();
-    const dateB = new Date(b.borrow_date).getTime();
-    return dateB - dateA; // Urutkan dari terbaru ke terlama
-  });
+      return matchStatus && matchSearch;
+    });
+  }, [activeFilter, borrowingList, normalizedQuery]);
+
+  const sortedData = useMemo(() => {
+    return [...filteredData].sort((a, b) => {
+      const dateA = new Date(a.borrow_date).getTime();
+      const dateB = new Date(b.borrow_date).getTime();
+      return dateB - dateA; // Urutkan dari terbaru ke terlama
+    });
+  }, [filteredData]);
 
   return (
     <div className="flex min-h-screen bg-[#F3F6F8] font-sans text-slate-900">
@@ -210,9 +225,9 @@ export default function RiwayatPinjam() {
                           {item.book_title}
                         </span>
                       </td>
-                      <td className="p-6 text-center text-slate-500">{item.borrow_date}</td>
-                      <td className="p-6 text-center text-slate-500">{item.due_date}</td>
-                      <td className="p-6 text-center text-slate-500">{item.return_date ?? "-"}</td>
+                      <td className="p-6 text-center text-slate-500">{formatDateDisplay(item.borrow_date)}</td>
+                      <td className="p-6 text-center text-slate-500">{formatDateDisplay(item.due_date)}</td>
+                      <td className="p-6 text-center text-slate-500">{formatDateDisplay(item.return_date)}</td>
                       <td className="p-6 text-center">
                         <StatusBadge status={item.status} />
                       </td>
@@ -221,11 +236,15 @@ export default function RiwayatPinjam() {
                       <td className="p-6 text-center">
                         {item.status === "Dipinjam" ? (
                           <div className="flex justify-center">
-                            <button 
+                            <button
                               onClick={() => openExtendModal(item.id, item.book_title)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-1.5 rounded-full text-sm transition-colors shadow-sm"
+                              disabled={isActionLoading}
+                              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-1.5 rounded-full text-sm transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
                               title="Perpanjang Peminjaman"
                             >
+                              {actionState.type === "extend" && actionState.id === item.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : null}
                               Perpanjang
                             </button>
                           </div>
@@ -241,7 +260,7 @@ export default function RiwayatPinjam() {
         </div>
         {/* --- 5. MODAL KONFIRMASI PERPANJANG --- */}
         <Dialog open={isExtendDialogOpen} onOpenChange={setIsExtendDialogOpen}>
-            <DialogContent className="fixed !left-1/2 !top-1/2 z-50 w-full max-w-[450px] !-translate-x-1/2 !-translate-y-1/2 bg-white p-8 rounded-2xl shadow-2xl border-none">
+      <DialogContent className="fixed left-1/2! top-1/2! z-50 w-full max-w-[450px] -translate-x-1/2! -translate-y-1/2! bg-white p-8 rounded-2xl shadow-2xl border-none">
                 
                 {/* Tombol Close */}
                 <div 
@@ -277,12 +296,20 @@ export default function RiwayatPinjam() {
                     >
                         Batal
                     </Button>
-                    <Button 
-                        type="button" 
-                        onClick={handleConfirmExtend} 
-                        className="h-10 rounded-xl bg-blue-600 px-8 font-bold text-white hover:bg-blue-700"
+                    <Button
+                        type="button"
+                        onClick={handleConfirmExtend}
+                        disabled={isActionLoading}
+                        className="h-10 rounded-xl bg-blue-600 px-8 font-bold text-white hover:bg-blue-700 disabled:opacity-60"
                     >
-                        Ya, Perpanjang
+                        {isActionLoading ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Memproses...
+                          </span>
+                        ) : (
+                          "Ya, Perpanjang"
+                        )}
                     </Button>
                 </DialogFooter>
 

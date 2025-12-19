@@ -210,6 +210,29 @@ export default function KelolaPinjaman() {
         }
     };
 
+    const handleRejectLoan = async () => {
+        if (!selectedLoan) return;
+
+        setActionState({ type: "reject", id: selectedLoan.id });
+        try {
+            await http.post(`/borrowings/${selectedLoan.id}/reject`, {});
+            toast.success("Pengajuan ditolak", {
+                description: `Pengajuan peminjaman untuk buku "${selectedLoan.book_title ?? "-"}" telah ditolak.`,
+                className: "!bg-white !text-slate-900 !border-slate-200",
+            });
+            setIsDialogOpen(false);
+            fetchBorrowings();
+        } catch (error) {
+            console.error(error);
+            toast.error("Gagal menolak pengajuan", {
+                description: "Terjadi kesalahan saat menolak pengajuan peminjaman.",
+                className: "!bg-white !text-slate-900 !border-slate-200",
+            });
+        } finally {
+            setActionState({ type: null, id: null });
+        }
+    };
+
     const handleTabChange = (tab: "aktif" | "pengajuan" | "terlambat" | "dikembalikan") => {
         setActiveTab(tab);
         setSearchQuery("");
@@ -508,6 +531,7 @@ export default function KelolaPinjaman() {
                                         Tutup
                                     </Button>
                                     <Button 
+                                        onClick={handleRejectLoan}
                                         disabled={isActionLoading}
                                         className="bg-red-600 hover:bg-red-700 rounded-xl text-white font-bold px-6 h-10 flex items-center justify-center gap-2 disabled:opacity-60"
                                     >
