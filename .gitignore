@@ -4,3 +4,4 @@ DATABASE_DIAGRAM.md
 SEQUENCE.md
 *.dbml
 *.bak
+.env
