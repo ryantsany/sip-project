@@ -97,7 +97,7 @@ export interface BorrowRecord {
   return_date?: string | null;
   created_at: string;
   updated_at: string;
-  status: 'Pending' | 'Dipinjam' | 'Selesai' | string;
+  status: 'Pending' | 'Dipinjam' | 'Selesai' | 'Dikembalikan' | 'Tenggat' | 'Terlambat' | 'Ditolak' | 'Hilang' | string;
   denda?: number | null;
   notes?: string | null;
 }

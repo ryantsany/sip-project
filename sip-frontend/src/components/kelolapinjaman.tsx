@@ -30,11 +30,11 @@ import {
 
 export default function KelolaPinjaman() {
     const [searchQuery, setSearchQuery] = useState("");
-    const [activeTab, setActiveTab] = useState<"aktif" | "pengajuan" | "terlambat" | "dikembalikan">("aktif");
+    const [activeTab, setActiveTab] = useState<"aktif" | "pengajuan" | "terlambat" | "dikembalikan" | "hilang">("aktif");
     const [borrowings, setBorrowings] = useState<ManageBorrowingRecord[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedLoan, setSelectedLoan] = useState<ManageBorrowingRecord | null>(null);
-    const [actionState, setActionState] = useState<{ type: 'accept' | 'extend' | 'return' | 'reject' | null; id: string | null }>({
+    const [actionState, setActionState] = useState<{ type: 'accept' | 'extend' | 'return' | 'reject' | 'acceptLost' | null; id: string | null }>({
         type: null,
         id: null,
     });
@@ -70,12 +70,14 @@ export default function KelolaPinjaman() {
         const active = borrowings.filter((loan) => (loan.status ?? "").toLowerCase() === "dipinjam");
         const late = borrowings.filter((loan) => ["terlambat", "tenggat"].includes((loan.status ?? "").toLowerCase()));
         const returned = borrowings.filter((loan) => (loan.status ?? "").toLowerCase() === "dikembalikan");
+        const lost = borrowings.filter((loan) => (loan.status ?? "").toLowerCase() === "hilang");
 
         return {
             aktif: active,
             pengajuan: pending,
             terlambat: late,
             dikembalikan: returned,
+            hilang: lost,
         } as const;
     }, [borrowings]);
 
@@ -101,6 +103,16 @@ export default function KelolaPinjaman() {
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
+
+    const tableColSpan = useMemo(() => {
+        // Base columns: Nama Peminjam, Judul, (Tenggat/Return/BorrowDate), Status, (Denda?), Aksi, plus optional Notes for Hilang
+        // pengajuan: 5 cols (Nama, Judul, Tanggal Pengambilan, Status, Aksi)
+        // others (default): 6 cols
+        // hilang: 7 cols (adds Notes)
+        if (activeTab === "pengajuan") return 5;
+        if (activeTab === "hilang") return 7;
+        return 6;
+    }, [activeTab]);
 
     const formatDateDisplay = (dateString?: string | null) => {
         if (!dateString) return "-";
@@ -232,7 +244,30 @@ export default function KelolaPinjaman() {
         }
     };
 
-    const handleTabChange = (tab: "aktif" | "pengajuan" | "terlambat" | "dikembalikan") => {
+    const handleAcceptLostFine = async () => {
+        if (!selectedLoan) return;
+
+        setActionState({ type: "acceptLost", id: selectedLoan.id });
+        try {
+            await http.post(`/borrowings/${selectedLoan.id}/lost/accept`, {});
+            toast.success("Denda kehilangan lunas", {
+                description: `Denda kehilangan untuk buku "${selectedLoan.book_title ?? "-"}" telah ditandai lunas.`,
+                className: "!bg-white !text-slate-900 !border-slate-200",
+            });
+            setIsDialogOpen(false);
+            fetchBorrowings();
+        } catch (error) {
+            console.error(error);
+            toast.error("Gagal memproses denda", {
+                description: error instanceof Error ? error.message : "Terjadi kesalahan saat memproses denda kehilangan.",
+                className: "!bg-white !text-slate-900 !border-slate-200",
+            });
+        } finally {
+            setActionState({ type: null, id: null });
+        }
+    };
+
+    const handleTabChange = (tab: "aktif" | "pengajuan" | "terlambat" | "dikembalikan" | "hilang") => {
         setActiveTab(tab);
         setSearchQuery("");
     };
@@ -256,6 +291,8 @@ export default function KelolaPinjaman() {
                 return "bg-red-100 text-red-400 border border-red-200 tracking-wider";
             case "Dipinjam":
                 return "bg-blue-100 text-blue-500 border border-blue-200 tracking-wider";
+            case "Hilang":
+                return "bg-red-100 text-red-700 border border-red-200 tracking-wider";
             default:
                 return "bg-gray-100 text-gray-500 border border-gray-200 tracking-wider";
         }
@@ -319,6 +356,16 @@ export default function KelolaPinjaman() {
                 >
                     Dikembalikan
                 </button>
+                <button
+                    onClick={() => handleTabChange("hilang")}
+                    className={`h-10 px-4 rounded-lg font-bold text-sm transition-all whitespace-nowrap flex items-center justify-center tracking-wider ${
+                        activeTab === "hilang"
+                        ? "bg-blue-500 text-white shadow-md"
+                        : "text-slate-500 hover:bg-gray-50"
+                    }`}
+                >
+                    Hilang
+                </button>
             </div>
 
             {/* Search Bar */}
@@ -355,6 +402,10 @@ export default function KelolaPinjaman() {
                             {activeTab !== "pengajuan" && (
                                 <th className="p-6 font-bold text-slate-700 text-center">Denda</th>
                             )}
+
+                            {activeTab === "hilang" && (
+                                <th className="p-6 font-bold text-slate-700 text-center">Notes</th>
+                            )}
                             
                             <th className="p-6 font-bold text-slate-700 text-center">Aksi</th>
                         </tr>
@@ -362,7 +413,7 @@ export default function KelolaPinjaman() {
                     <tbody>
                         {isLoading && (
                             <tr>
-                                <td colSpan={6} className="p-10 text-center text-slate-500">
+                                <td colSpan={tableColSpan} className="p-10 text-center text-slate-500">
                                     <div className="flex flex-col items-center gap-3">
                                         <Loader2 className="h-6 w-6 animate-spin" />
                                         <p className="text-sm font-medium">Memuat data peminjaman...</p>
@@ -373,7 +424,7 @@ export default function KelolaPinjaman() {
 
                         {!isLoading && fetchError && (
                             <tr>
-                                <td colSpan={6} className="p-10 text-center text-red-500">
+                                <td colSpan={tableColSpan} className="p-10 text-center text-red-500">
                                     <div className="flex flex-col items-center gap-3">
                                         <p className="text-sm font-semibold">{fetchError}</p>
                                         <Button
@@ -389,13 +440,15 @@ export default function KelolaPinjaman() {
 
                         {!isLoading && !fetchError && currentItems.length === 0 && (
                             <tr>
-                                <td colSpan={6} className="p-10 text-center text-gray-500">
+                                <td colSpan={tableColSpan} className="p-10 text-center text-gray-500">
                                     {activeTab === "pengajuan"
                                         ? "Belum ada pengajuan peminjaman."
                                         : activeTab === "aktif"
                                         ? "Belum ada peminjaman aktif."
                                         : activeTab === "terlambat"
                                         ? "Tidak ada buku terlambat."
+                                        : activeTab === "hilang"
+                                        ? "Tidak ada laporan kehilangan."
                                         : "Belum ada buku yang dikembalikan."}
                                 </td>
                             </tr>
@@ -429,6 +482,12 @@ export default function KelolaPinjaman() {
 
                                     {activeTab !== "pengajuan" && (
                                         <td className="p-6 text-slate-700 text-center">{formatCurrency(loan.denda)}</td>
+                                    )}
+
+                                    {activeTab === "hilang" && (
+                                        <td className="p-6 text-slate-700 text-center">
+                                            {(loan.notes ?? "").toLowerCase().includes("lunas") ? "Lunas" : "Belum Dibayarkan"}
+                                        </td>
                                     )}
 
                                     <td className="p-6 text-center">
@@ -554,7 +613,33 @@ export default function KelolaPinjaman() {
                                         Setujui
                                     </Button>
                                 </div>
-                            ) : activeTab === "dikembalikan" ? (<></>) : activeTab === "terlambat" ? (
+                            ) : activeTab === "dikembalikan" ? (
+                                <></>
+                            ) : activeTab === "hilang" ? (
+                                <div className="space-y-4">
+                                    <div className="bg-red-50 border border-red-100 p-4 rounded-2xl text-sm text-red-900">
+                                        <p className="font-semibold">Laporan Kehilangan</p>
+                                        <p className="text-red-800 mt-1">
+                                            Denda saat ini: <span className="font-bold">{formatCurrency(selectedLoan.denda)}</span>
+                                        </p>
+                                        <p className="text-xs text-red-700 mt-2">
+                                            Klik tombol di bawah jika denda kehilangan sudah dibayarkan.
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-3 justify-end">
+                                        <Button
+                                            onClick={handleAcceptLostFine}
+                                            disabled={isActionLoading}
+                                            className="h-10 rounded-xl px-8 font-bold bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer disabled:opacity-60 flex items-center gap-2"
+                                        >
+                                            {actionState.type === "acceptLost" ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : null}
+                                            Tandai Lunas
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : activeTab === "terlambat" ? (
                                 <div className="space-y-4 text-right">
                                     <Button 
                                             onClick={handleReturnBook}

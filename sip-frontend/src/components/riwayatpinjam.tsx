@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { X, Loader2, Search } from "lucide-react";
+import { X, Loader2, Search, MoreVertical } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Sidebar from "@/components/sidebar"; 
 import NotificationDropdown from "@/components/notifikasi";
@@ -16,6 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function RiwayatPinjam() {
   const [activeFilter, setActiveFilter] = useState("Semua");
@@ -24,9 +25,13 @@ export default function RiwayatPinjam() {
   const [isLoadingList, setIsLoadingList] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
+  const isLostView = activeFilter === "Hilang";
+
   const [isExtendDialogOpen, setIsExtendDialogOpen] = useState(false);
   const [selectedExtendItem, setSelectedExtendItem] = useState<{ id: string; title: string } | null>(null);
-  const [actionState, setActionState] = useState<{ type: "extend" | null; id: string | null }>({
+  const [isLostDialogOpen, setIsLostDialogOpen] = useState(false);
+  const [selectedLostItem, setSelectedLostItem] = useState<{ id: string; title: string } | null>(null);
+  const [actionState, setActionState] = useState<{ type: "extend" | "lost" | null; id: string | null }>({
     type: null,
     id: null,
   });
@@ -43,10 +48,33 @@ export default function RiwayatPinjam() {
     return dateString;
   };
 
+  const formatCurrency = (amount?: number | null) => {
+    if (amount === null || amount === undefined) return "-";
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const getPaymentNotes = (notes?: string | null) => {
+    if (!notes) {
+      return { label: "Belum dibayarkan", isPaid: false };
+    }
+    const normalized = notes.toLowerCase();
+    const isPaid = normalized.includes("lunas") || normalized.includes("paid");
+    return { label: isPaid ? "Lunas" : "Belum dibayarkan", isPaid };
+  };
+
   // --- 2. HANDLER MEMBUKA MODAL ---
   const openExtendModal = (id: string, title: string) => {
     setSelectedExtendItem({ id, title });
     setIsExtendDialogOpen(true);
+  };
+
+  const openLostModal = (id: string, title: string) => {
+    setSelectedLostItem({ id, title });
+    setIsLostDialogOpen(true);
   };
 
   // --- 3. HANDLER EKSEKUSI PERPANJANG ---
@@ -71,6 +99,31 @@ export default function RiwayatPinjam() {
       setActionState({ type: null, id: null });
       setIsExtendDialogOpen(false);
       setSelectedExtendItem(null);
+      fetchBorrowingList();
+    }
+  };
+
+  const handleConfirmLost = async () => {
+    if (!selectedLostItem) return;
+
+    setActionState({ type: "lost", id: selectedLostItem.id });
+    try {
+      await http.post(`/borrowings/${selectedLostItem.id}/lost`, {});
+
+      toast.success("Laporan kehilangan dikirim", {
+        description: `Buku "${selectedLostItem.title}" ditandai sebagai Hilang.`,
+        className: "!bg-white !text-slate-900 !border-slate-200",
+      });
+    } catch (error) {
+      console.error("Report lost failed:", error);
+      toast.error("Gagal melaporkan kehilangan", {
+        description: "Terjadi kesalahan saat mengirim laporan kehilangan.",
+        className: "!bg-white !text-slate-900 !border-slate-200",
+      });
+    } finally {
+      setActionState({ type: null, id: null });
+      setIsLostDialogOpen(false);
+      setSelectedLostItem(null);
       fetchBorrowingList();
     }
   };
@@ -148,7 +201,7 @@ export default function RiwayatPinjam() {
         {/* --- FILTER TABS --- */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <span className="font-bold text-slate-700 mr-2">Status:</span>
-          {["Semua","Pending", "Dipinjam", "Dikembalikan", "Tenggat", "Terlambat", "Ditolak"].map(
+          {["Semua","Pending", "Dipinjam", "Dikembalikan", "Tenggat", "Terlambat", "Ditolak", "Hilang"].map(
             (filter) => (
               <button
                 key={filter}
@@ -173,16 +226,27 @@ export default function RiwayatPinjam() {
                 <tr className="border-b border-gray-100">
                   <th className="p-6 font-semibold text-slate-600">Judul Buku</th>
                   <th className="p-6 font-semibold text-slate-600 text-center">Tanggal Peminjaman</th>
-                  <th className="p-6 font-semibold text-slate-600 text-center">Batas Waktu</th>
-                  <th className="p-6 font-semibold text-slate-600 text-center">Tanggal Pengembalian</th>
-                  <th className="p-6 font-semibold text-slate-600 text-center">Status</th>
-                  <th className="p-6 font-semibold text-slate-600 text-center">Aksi</th>
+                  {isLostView ? (
+                    <>
+                      <th className="p-6 font-semibold text-slate-600 text-center">Tanggal Pembayaran</th>
+                      <th className="p-6 font-semibold text-slate-600 text-center">Status</th>
+                      <th className="p-6 font-semibold text-slate-600 text-center">Denda</th>
+                      <th className="p-6 font-semibold text-slate-600 text-center">Notes</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="p-6 font-semibold text-slate-600 text-center">Batas Waktu</th>
+                      <th className="p-6 font-semibold text-slate-600 text-center">Tanggal Pengembalian</th>
+                      <th className="p-6 font-semibold text-slate-600 text-center">Status</th>
+                      <th className="p-6 font-semibold text-slate-600 text-center">Aksi</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {isLoadingList && (
                   <tr>
-                    <td colSpan={5} className="p-10 text-center text-[#4F4F4F]">
+                    <td colSpan={6} className="p-10 text-center text-[#4F4F4F]">
                       <div className="flex flex-col items-center justify-center gap-3">
                         <Loader2 className="h-6 w-6 animate-spin" />
                         <p className="text-sm font-medium">Memuat riwayat peminjaman...</p>
@@ -193,7 +257,7 @@ export default function RiwayatPinjam() {
 
                 {!isLoadingList && fetchError && (
                   <tr>
-                    <td colSpan={5} className="p-10 text-center text-red-500">
+                    <td colSpan={6} className="p-10 text-center text-red-500">
                       <div className="flex flex-col items-center gap-3">
                         <p className="text-sm font-semibold">{fetchError}</p>
                         <button
@@ -209,7 +273,7 @@ export default function RiwayatPinjam() {
 
                 {!isLoadingList && !fetchError && sortedData.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-10 text-center text-gray-400">
+                    <td colSpan={6} className="p-10 text-center text-gray-400">
                       Tidak ada riwayat peminjaman ditemukan.
                     </td>
                   </tr>
@@ -226,33 +290,87 @@ export default function RiwayatPinjam() {
                           {item.book_title}
                         </span>
                       </td>
-                      <td className="p-6 text-center text-slate-500">{item.status === "Ditolak" ? "-" : formatDateDisplay(item.borrow_date)}</td>
-                      <td className="p-6 text-center text-slate-500">{item.status === "Ditolak" ? "-" : formatDateDisplay(item.due_date)}</td>
-                      <td className="p-6 text-center text-slate-500">{item.status === "Ditolak" ? "-" : formatDateDisplay(item.return_date)}</td>
-                      <td className="p-6 text-center">
-                        <StatusBadge status={item.status} />
+                      <td className="p-6 text-center text-slate-500">
+                        {item.status === "Ditolak" ? "-" : formatDateDisplay(item.borrow_date)}
                       </td>
 
-                      {/* 4. BUTTON PERPANJANG (Memicu Modal) */}
-                      <td className="p-6 text-center">
-                        {item.status === "Dipinjam" ? (
-                          <div className="flex justify-center">
-                            <button
-                              onClick={() => openExtendModal(item.id, item.book_title)}
-                              disabled={isActionLoading}
-                              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-1.5 rounded-full text-sm transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
-                              title="Perpanjang Peminjaman"
-                            >
-                              {actionState.type === "extend" && actionState.id === item.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : null}
-                              Perpanjang
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-gray-300">-</span>
-                        )}
-                      </td>
+                      {isLostView ? (
+                        <>
+                          <td className="p-6 text-center text-slate-500">
+                            {formatDateDisplay(item.return_date)}
+                          </td>
+                          <td className="p-6 text-center">
+                            <StatusBadge status={item.status} />
+                          </td>
+                          <td className="p-6 text-center text-slate-500">
+                            {formatCurrency(item.denda)}
+                          </td>
+                          <td className="p-6 text-center">
+                            {(() => {
+                              const { label, isPaid } = getPaymentNotes(item.notes);
+                              return (
+                                <span
+                                  className={`px-4 py-1.5 rounded-full text-sm font-bold inline-block border ${
+                                    isPaid
+                                      ? "bg-green-100 text-green-700 border-green-200"
+                                      : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                  }`}
+                                >
+                                  {label}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="p-6 text-center text-slate-500">
+                            {item.status === "Ditolak" ? "-" : formatDateDisplay(item.due_date)}
+                          </td>
+                          <td className="p-6 text-center text-slate-500">
+                            {item.status === "Ditolak" ? "-" : formatDateDisplay(item.return_date)}
+                          </td>
+                          <td className="p-6 text-center">
+                            <StatusBadge status={item.status} />
+                          </td>
+
+                          {/* 4. BUTTON PERPANJANG (Memicu Modal) */}
+                          <td className="p-6 text-center">
+                            {item.status === "Dipinjam" || item.status === "Terlambat" || item.status === "Tenggat" ? (
+                              <div className="flex justify-center">
+                                <ActionDropdown disabled={isActionLoading}>
+                                  {item.status === "Dipinjam" ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => openExtendModal(item.id, item.book_title)}
+                                      disabled={isActionLoading}
+                                      className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                                    >
+                                      {actionState.type === "extend" && actionState.id === item.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : null}
+                                      Perpanjang
+                                    </button>
+                                  ) : null}
+                                  <button
+                                    type="button"
+                                    onClick={() => openLostModal(item.id, item.book_title)}
+                                    disabled={isActionLoading}
+                                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                                  >
+                                    {actionState.type === "lost" && actionState.id === item.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : null}
+                                    Hilang
+                                  </button>
+                                </ActionDropdown>
+                              </div>
+                            ) : (
+                              <span className="text-gray-300">-</span>
+                            )}
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
               </tbody>
@@ -303,7 +421,7 @@ export default function RiwayatPinjam() {
                         disabled={isActionLoading}
                         className="h-10 rounded-xl bg-blue-600 px-8 font-bold text-white hover:bg-blue-700 disabled:opacity-60"
                     >
-                        {isActionLoading ? (
+                        {actionState.type === "extend" ? (
                           <span className="inline-flex items-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
                             Memproses...
@@ -315,6 +433,61 @@ export default function RiwayatPinjam() {
                 </DialogFooter>
 
             </DialogContent>
+        </Dialog>
+
+        {/* --- MODAL KONFIRMASI HILANG --- */}
+        <Dialog open={isLostDialogOpen} onOpenChange={setIsLostDialogOpen}>
+          <DialogContent className="fixed left-1/2! top-1/2! z-50 w-full max-w-[450px] -translate-x-1/2! -translate-y-1/2! bg-white p-8 rounded-2xl shadow-2xl border-none">
+            <div
+              className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 hover:bg-slate-100 p-1 cursor-pointer"
+              onClick={() => setIsLostDialogOpen(false)}
+            >
+              <X className="h-6 w-6 text-slate-500" />
+            </div>
+
+            <DialogHeader className="mb-2">
+              <DialogTitle className="text-2xl font-bold text-slate-800 text-center">
+                Konfirmasi Laporan Hilang
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="text-center py-4">
+              <p className="text-slate-600">
+                Apakah Anda yakin ingin melaporkan buku berikut sebagai hilang?
+              </p>
+              <p className="text-red-600 font-bold text-lg mt-2 px-4 py-2 bg-red-50 rounded-xl inline-block">
+                {selectedLostItem?.title}
+              </p>
+              <p className="text-sm text-slate-400 mt-4">
+                *Status peminjaman akan berubah menjadi <b>Hilang</b> dan petugas/admin dapat menindaklanjuti.
+              </p>
+            </div>
+
+            <DialogFooter className="mt-4 flex gap-3 justify-center sm:justify-center">
+              <Button
+                type="button"
+                onClick={() => setIsLostDialogOpen(false)}
+                className="h-10 rounded-xl bg-gray-100 px-8 font-bold text-slate-600 hover:bg-gray-200"
+              >
+                Batal
+              </Button>
+              <Button
+                type="button"
+                onClick={handleConfirmLost}
+                disabled={isActionLoading}
+                className="h-10 rounded-xl bg-red-600 px-8 font-bold text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {actionState.type === "lost" ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Memproses...
+                  </span>
+                ) : (
+                  "Ya, Laporkan"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
         </Dialog>
       </main>
     </div>
@@ -343,11 +516,44 @@ function StatusBadge({ status }: { status: string }) {
     case "Ditolak":
       styleClass = "bg-gray-200 text-gray-500 border border-gray-300";
       break;
+    case "Hilang":
+      styleClass = "bg-red-100 text-red-700 border border-red-200";
+      break;
   }
 
   return (
     <span className={`px-4 py-1.5 rounded-full text-sm font-bold inline-block ${styleClass}`}>
       {status}
     </span>
+  );
+}
+
+function ActionDropdown({
+  disabled,
+  children,
+}: {
+  disabled: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          disabled={disabled}
+          className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed"
+          title="Aksi"
+        >
+          <MoreVertical className="h-4 w-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        sideOffset={8}
+        className="w-44 p-1 bg-white border border-gray-200 shadow-lg rounded-xl"
+      >
+        <div className="flex flex-col">{children}</div>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -72,6 +72,64 @@ class ManageBorrowingController extends Controller
         return ResponseFormatter::success($borrowing->api_response, 'Tenggat diperpanjang 1 minggu.');
     }
 
+    public function reportLost(Request $request, Borrowing $borrowing)
+    {
+        $borrowing->loadMissing('book', 'user');
+
+        if ($borrowing->user_id !== $request->user()->id) {
+            return ResponseFormatter::error(403, null, 'Tidak diizinkan melaporkan peminjaman pengguna lain.');
+        }
+
+        if (!in_array($borrowing->status, ['Dipinjam', 'Terlambat', 'Tenggat'], true)) {
+            return ResponseFormatter::error(400, null, 'Hanya peminjaman aktif yang dapat dilaporkan hilang.');
+        }
+
+        $borrowing->status = 'Hilang';
+        $borrowing->notes = 'Laporan kehilangan diterima pada ' . now()->format('Y-m-d H:i:s') . '. ' . ($borrowing->notes ?? '');
+        $borrowing->denda = $borrowing->denda + 100000;
+        $borrowing->book()->decrement('jumlah');
+        $borrowing->save();
+
+        // Notify user
+        Notification::create([
+            'user_id' => $borrowing->user_id,
+            'tipe' => 'important',
+            'judul' => 'Laporan Kehilangan',
+            'pesan' => 'Laporan kehilangan untuk buku "' . optional($borrowing->book)->judul . '" telah diterima. Denda sebesar Rp' . number_format($borrowing->denda, 0, ',', '.') . ' telah dikenakan pada akun Anda.',
+            'is_read' => false,
+        ]);
+
+        return ResponseFormatter::success($borrowing->api_response, 'Laporan kehilangan berhasil dikirim.');
+    }
+
+    public function acceptLostFine(Borrowing $borrowing)
+    {
+        $borrowing->loadMissing('book', 'user');
+
+        if ($borrowing->status !== 'Hilang') {
+            return ResponseFormatter::error(400, null, 'Hanya peminjaman berstatus hilang yang dapat diproses denda.');
+        }
+
+        if ($borrowing->notes === 'Lunas') {
+            return ResponseFormatter::error(400, null, 'Denda kehilangan sudah diproses lunas.');
+        }
+
+        $borrowing->notes = 'Lunas';
+        $borrowing->return_date = now()->format('Y-m-d');
+        $borrowing->save();
+
+        // Notify user
+        Notification::create([
+            'user_id' => $borrowing->user_id,
+            'tipe' => 'success',
+            'judul' => 'Denda Kehilangan Lunas',
+            'pesan' => 'Denda kehilangan untuk buku "' . optional($borrowing->book)->judul . '" telah dibayarkan.',
+            'is_read' => false,
+        ]);
+
+        return ResponseFormatter::success($borrowing->api_response, 'Denda kehilangan telah dibayarkan.');
+    }
+
     public function adminAcceptBorrow(Borrowing $borrowing)
     {
         $borrowing->loadMissing('book');
