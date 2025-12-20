@@ -29,6 +29,12 @@ class BorrowController extends Controller
             return ResponseFormatter::error(400, null, 'Anda memiliki peminjaman yang terlambat. Silahkan selesaikan peminjaman tersebut sebelum meminjam buku lain.');
         }
 
+        // Check book stock
+        $bookStock = Book::where('slug', $request->input('book_slug'))->value('stok');
+        if ($bookStock <= 0) {
+            return ResponseFormatter::error(400, null, 'Stok buku tidak mencukupi untuk peminjaman saat ini.');
+        }
+
         // Validate the request
         $validated = $request->validate([
             'book_slug' => 'required|string|exists:books,slug',
