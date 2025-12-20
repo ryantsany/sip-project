@@ -12,9 +12,9 @@ Laravel 12 + Next.js 16 monorepo for **Sistem Informasi Perpustakaan (SIP)**.
 
 ```
 sip-project/
-├─ docker-compose.yaml        # MySQL + phpMyAdmin helpers
-├─ sip-backend/               # Laravel API (source of truth)
-└─ sip-frontend/              # Next.js App Router frontend
+├─ docker-compose.yaml
+├─ sip-backend/
+└─ sip-frontend/
 ```
 
 ## Prerequisites
@@ -23,7 +23,7 @@ sip-project/
 | --------- | ------------------------------------------------------------------ |
 | Backend   | PHP 8.2+, Composer 2, MySQL 8, Node 18+ (optional for Vite assets) |
 | Frontend  | Node.js 20+, npm 10+                                               |
-| Tooling   | Git, Docker Desktop (optional but recommended)                     |
+| Tooling   | Git, Docker                                                        |
 
 ## Quick start
 
