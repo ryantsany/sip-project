@@ -6,7 +6,7 @@ Laravel 12 + Next.js 16 monorepo for **Sistem Informasi Perpustakaan (SIP)**.
 
 - **Backend:** PHP 8.2, Laravel 12, Sanctum, MySQL 8.
 - **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS 4, shadcn-inspired UI kit.
-- **Tooling:** Docker Compose (MySQL + phpMyAdmin), Composer 2, Node.js 20+ / npm 10+.
+- **Tooling:** Docker Compose (MySQL, phpMyAdmin, frontend, and backend), Composer 2, Node.js 20+ / npm 10+.
 
 ## Repository layout
 
